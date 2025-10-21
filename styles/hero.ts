@@ -267,8 +267,8 @@ export default heroui({
     },
     borderWidth: {
       small: "1px",
-      medium: "2px",
-      large: "3px",
+      medium: "1.5px",
+      large: "2px",
     },
     disabledOpacity: "0.5",
     dividerWeight: "1",

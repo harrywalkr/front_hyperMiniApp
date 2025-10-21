@@ -1,11 +1,8 @@
 export const site = {
-  name: {
-    fa: "دکس تریدینگ فارسی",
-    en: "DexTradingFa",
-  },
-  slogan: "",
-  title: "",
-  description: "",
+  name: "Hyperliquid",
+  slogan: "Your Gateway to the Future",
+  title: "Hyperliquid",
+  description: "Your Gateway to the Future",
   urls: {
     onchain: process.env.NEXT_PUBLIC_BASE_URL_ONE || process.env.BASE_URL_ONE,
     apiFull: process.env.NEXT_PUBLIC_BASE_URL_TWO,
