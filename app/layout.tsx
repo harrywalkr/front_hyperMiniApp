@@ -7,12 +7,12 @@ import { fontSans, site } from "@/core/config";
 export const metadata: Metadata = {
   generator: "Next.js",
   manifest: "/manifest.json",
-  authors: [{ name: site.name.en, url: site.urls.domain }],
+  authors: [{ name: site.name, url: site.urls.domain }],
   robots: {
     index: false,
     follow: false,
   },
-  creator: site.name.en,
+  creator: site.name,
   icons: {
     icon: "/icon/android-chrome-192x192.png",
     apple: "/icon/apple-touch-icon.png",
