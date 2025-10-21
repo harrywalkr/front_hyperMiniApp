@@ -1,4 +1,4 @@
-# 🚀 BitFx
+# 🚀 Hyperliquid Mini App
 
 ## 📖 Overview
 
