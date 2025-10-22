@@ -79,7 +79,6 @@ export function ControlledSelect<TFieldValues extends FieldValues>({
             <div className="relative">
               <Input
                 size={size}
-                variant="bordered"
                 label={label}
                 onFocus={() => setIsOpen(true)}
                 isInvalid={!!fieldState.error}
@@ -87,7 +86,7 @@ export function ControlledSelect<TFieldValues extends FieldValues>({
                 name={field.name}
                 endContent={
                   <ChevronDown
-                    className={`mb-2 text-foreground-600 transition-transform ${
+                    className={`mb-2 text-default-800 transition-transform ${
                       isOpen ? "rotate-180" : "rotate-0"
                     }`}
                     size={19}
@@ -104,7 +103,7 @@ export function ControlledSelect<TFieldValues extends FieldValues>({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.175 }}
-                    className="absolute z-999999 w-full bg-white border border-divider rounded-lg mt-2 p-3 overflow-hidden"
+                    className="absolute z-999999 w-full bg-background border border-divider rounded-lg mt-2 p-3 overflow-hidden"
                   >
                     {isSearchAble && (
                       <Input
@@ -116,6 +115,7 @@ export function ControlledSelect<TFieldValues extends FieldValues>({
                         className="pb-4"
                         variant="bordered"
                         autoFocus
+                        radius="sm"
                         onChange={(e) => {
                           setSearchValue(e.target.value);
 

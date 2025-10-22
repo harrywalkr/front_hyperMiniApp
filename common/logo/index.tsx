@@ -22,10 +22,20 @@ export const Logo: React.FC<LogoProps> = ({
         height={direction === "horizontal" ? 80 : 100}
       />
 
-      <div className="flex flex-col gap-2">
+      <div
+        className={clsx(
+          "flex flex-col gap-2",
+          direction === "vertical" && "items-center justify-center"
+        )}
+      >
         <p className="text-base font-bold">HyperLiquid- Copy Trade</p>
         {showDescription && (
-          <p className="text-foreground/85">
+          <p
+            className={clsx(
+              "text-foreground/85",
+              direction === "vertical" && "text-center"
+            )}
+          >
             You are subscribed user and eligible to use{" "}
             <strong>HyperLiquid</strong> app!
           </p>

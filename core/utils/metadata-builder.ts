@@ -61,7 +61,7 @@ export class MetadataBuilder {
       description: base?.description,
       keywords: base?.keywords ?? [],
       category: base?.category,
-      applicationName: site.name.fa,
+      applicationName: site.name,
       robots: {
         index: base?.indexable ?? true,
         follow: base?.indexable ?? true,
@@ -70,7 +70,7 @@ export class MetadataBuilder {
         title: base?.title,
         description: base?.description,
         url: base?.url,
-        siteName: site.name.fa,
+        siteName: site.name,
         locale: "en_US",
         type: "website",
         images: imagesArray,

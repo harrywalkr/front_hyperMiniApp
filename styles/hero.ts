@@ -121,7 +121,7 @@ export default heroui({
         },
         focus: "#4B9989",
         overlay: "#333333",
-        divider: "#111111",
+        divider: "#e3e3e6",
       },
     },
     dark: {
@@ -249,10 +249,10 @@ export default heroui({
   },
   layout: {
     fontSize: {
-      tiny: "0.75rem",
-      small: "0.875rem",
-      medium: "1rem",
-      large: "1.125rem",
+      tiny: "0.72rem",
+      small: "0.84rem",
+      medium: "0.94rem",
+      large: "1.11rem",
     },
     lineHeight: {
       tiny: "1rem",

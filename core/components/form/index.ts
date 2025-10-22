@@ -4,11 +4,7 @@ export { ControlledTextarea } from "./controlled-textarea";
 export { ControlledInput } from "./controlled-input";
 export { ControlledSwitch } from "./controlled-switch";
 export { ControlledSelect } from "./controlled-select";
-export { ControlledEditor } from "./controlled-editor";
 export { ControlledNumberInput } from "./controlled-number-input";
-export { ControlledAddItem } from "./controlled-add-item";
-export { ControlledAdvancedAddItem } from "./controlled-advanced-add-item";
+
 export { ControlledColor } from "./controlled-color";
-export { ControlledDimensionSelect } from "./controlled-dimension-select";
-export { ControlledProducerSelect } from "./controlled-producer-select";
-export { ControlledProductTypeSelect } from "./controlled-product-type-select";
+export { ControlledAutocomplete } from "./controlled-autocomplete";

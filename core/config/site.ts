@@ -1,7 +1,7 @@
 export const site = {
-  name: "Hyperliquid",
+  name: "HyperLiquid",
   slogan: "Your Gateway to the Future",
-  title: "Hyperliquid",
+  title: "HyperLiquid",
   description: "Your Gateway to the Future",
   urls: {
     onchain: process.env.NEXT_PUBLIC_BASE_URL_ONE || process.env.BASE_URL_ONE,
