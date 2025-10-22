@@ -17,8 +17,8 @@ export const Back: React.FC<BackProps> = ({ title, href, endContent }) => {
     }
   }, [href, router]);
   return (
-    <div className="w-full h-16">
-      <div className="flex items-center justify-between mb-5 absolute top-2 left-1.5 right-1.5">
+    <div className="w-full h-14">
+      <div className="flex items-center justify-between  absolute top-2 left-1.5 right-1.5">
         <Button
           variant="light"
           startContent={<ChevronLeft size={18} />}

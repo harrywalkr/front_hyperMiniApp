@@ -138,7 +138,7 @@ export const DashboardLanding: React.FC = () => {
         <Table
           shadow="none"
           classNames={{
-            wrapper: "bg-transparent border-none",
+            wrapper: "bg-transparent border-none px-0",
             td: "bg-primary-50 text-xs first:rounded-l-full last:rounded-r-full",
             th: "bg-transparent",
 
