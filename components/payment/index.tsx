@@ -1,14 +1,20 @@
 "use client";
-
 import { Back, Logo } from "@/common";
 import { addToast, Alert, Button } from "@heroui/react";
 import { useCallback, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Copy } from "lucide-react";
 import { useCopyToClipboard } from "usehooks-ts";
+import { subscribeModels } from "@/models/subscribe";
+import { useTimer } from "@/core/hooks";
 
 export const Payment: React.FC = () => {
-  const [selectedProtocol, setSelectedProtocol] = useState<string>("BEP20");
+  const [selectedProtocol, setSelectedProtocol] = useState<string>("usdtbsc");
+
+  const { remainingTime } = useTimer({
+    initialSeconds: 30 * 60,
+    autoStart: true,
+  });
 
   const [, copyToClipboard] = useCopyToClipboard();
 
@@ -30,6 +36,19 @@ export const Payment: React.FC = () => {
       });
   }, [copyToClipboard]);
 
+  const { data: subscriptionStatus } = subscribeModels.getStatus.useQuery();
+
+  const { mutate: createSubscription, data } =
+    subscribeModels.create.useMutation();
+
+  const handleCreateSubscription = useCallback(
+    (protocol: string) => {
+      setSelectedProtocol(protocol);
+      createSubscription({ payCurrency: protocol });
+    },
+    [createSubscription]
+  );
+
   return (
     <div>
       <Back title="Payment" />
@@ -41,32 +60,32 @@ export const Payment: React.FC = () => {
             Choose Wallet Protocol
           </p>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <Button
-              onPress={() => setSelectedProtocol("BEP20")}
+              onPress={() => handleCreateSubscription("usdtbsc")}
               radius="sm"
               className="text-xs"
-              color={selectedProtocol === "BEP20" ? "primary" : "default"}
+              color={selectedProtocol === "usdtbsc" ? "primary" : "default"}
             >
               USDT (BEP20)
             </Button>
 
             <Button
-              onPress={() => setSelectedProtocol("ERC20")}
+              onPress={() => handleCreateSubscription("bnbbsc")}
               radius="sm"
               className="text-xs"
-              color={selectedProtocol === "ERC20" ? "primary" : "default"}
+              color={selectedProtocol === "bnbbsc" ? "primary" : "default"}
             >
-              USDT (ERC20)
+              BNB (BEP20)
             </Button>
 
             <Button
-              onPress={() => setSelectedProtocol("TRC20")}
+              onPress={() => handleCreateSubscription("sol")}
               radius="sm"
               className="text-xs"
-              color={selectedProtocol === "TRC20" ? "primary" : "default"}
+              color={selectedProtocol === "sol" ? "primary" : "default"}
             >
-              USDT (TRC20)
+              SOL
             </Button>
           </div>
         </div>
@@ -80,7 +99,10 @@ export const Payment: React.FC = () => {
         </div>
 
         <div className="flex flex-col items-center gap-y-4">
-          <p className="text-center text-danger font-medium text-lg">19:59</p>
+          <p className="text-center text-danger font-medium text-lg">
+            {remainingTime.hours}:{remainingTime.minutes}:
+            {remainingTime.seconds}
+          </p>
 
           <p className="text-center">Left to finish the process</p>
 
@@ -137,6 +159,16 @@ export const Payment: React.FC = () => {
             recovered!
           </span>
         </Alert>
+
+        <div>
+          <p>response of checking status:</p>
+          {JSON.stringify(subscriptionStatus, null, 2)}
+        </div>
+
+        <div>
+          <p>response of create subscription:</p>
+          {JSON.stringify(data, null, 2)}
+        </div>
       </div>
     </div>
   );

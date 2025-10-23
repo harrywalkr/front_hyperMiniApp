@@ -1,16 +1,13 @@
 import axios from "axios";
 import { site } from "./site";
-import { Session } from "next-auth";
 import { isServer } from "@tanstack/react-query";
-import { getSession, signOut } from "next-auth/react";
-
-let cachedSession: Session | null = null;
+import { getTgChatId } from "../utils";
 
 /**
  * Creates an Axios instance with a predefined base URL.
  */
 const instance = axios.create({
-  baseURL: site.urls.apiFull,
+  baseURL: site.urls.api,
 });
 
 /**
@@ -19,15 +16,12 @@ const instance = axios.create({
  */
 instance.interceptors.request.use(
   async (request) => {
-    request.headers["CLIENT-TYPE"] = "WEB-CLIENT";
-
     if (!isServer) {
-      if (!cachedSession) {
-        cachedSession = await getSession();
-      }
+      const tg = await getTgChatId();
 
-      if (cachedSession?.token) {
-        request.headers["Authorization"] = `Bearer ${cachedSession.token}`;
+      if (tg?.id) {
+        request.headers["X-TG-Init-Data"] = String(tg?.id ?? "561361266");
+        request.headers["X-Dev-Chat-Id"] = String(tg?.id ?? "561361266");
       }
     }
 
@@ -54,12 +48,6 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    console.log(error?.response?.data);
-
-    if (error?.response?.data?.statusCode === 401) {
-      await signOut();
-    }
-
     return Promise.reject(error);
   }
 );
