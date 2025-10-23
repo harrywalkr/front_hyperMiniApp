@@ -1,5 +1,10 @@
 import TelegramUserInfo from "@/components/telegram";
+import { TelegramWrapper } from "@/components/telegram/wrapper";
 
 export default function TelegramPage() {
-  return <TelegramUserInfo />;
+  return (
+    <TelegramWrapper>
+      <TelegramUserInfo />
+    </TelegramWrapper>
+  );
 }
