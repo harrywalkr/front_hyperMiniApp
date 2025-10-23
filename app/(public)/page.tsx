@@ -1,7 +1,6 @@
-import TelegramUserInfo from "@/components/telegram";
 import { redirect } from "next/navigation";
 
 export default function HomePage() {
-  // redirect("/login");
-  return <TelegramUserInfo />;
+  redirect("/login");
+  return null;
 }

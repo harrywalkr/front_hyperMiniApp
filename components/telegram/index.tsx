@@ -1,182 +1,126 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+
+type TgUser = {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+  is_premium?: boolean;
+  photo_url?: string;
+};
+
+type TgChat = { id: number; type?: string; title?: string };
 
 const TelegramUserInfo = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
+  const [chatInfo, setChatInfo] = useState<TgChat | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Keep a stable reference to tg
+  const tg = useMemo(
+    () =>
+      typeof window !== "undefined"
+        ? (window as any)?.Telegram?.WebApp
+        : undefined,
+    []
+  );
+
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    initializeTelegram();
-  }, []);
+    if (!tg) {
+      setError("Not running inside Telegram WebApp.");
+      setLoading(false);
+      return;
+    }
 
-  const initializeTelegram = () => {
     try {
-      const tg = (window as any)?.Telegram?.WebApp;
-
-      if (!tg) {
-        setError("Not in Telegram WebApp - opening in regular browser");
-        setLoading(false);
-        return;
-      }
-
       tg.ready();
       tg.expand();
 
-      // Get user data from Telegram
-      const initDataUnsafe = tg.initDataUnsafe || {};
-      const user = initDataUnsafe.user;
+      const initData: string = tg.initData || ""; // signed string (send to backend)
+      const initDataUnsafe = tg.initDataUnsafe || {}; // decoded (do not trust alone)
+      const user: TgUser | undefined = initDataUnsafe.user;
+      const chat: TgChat | undefined =
+        initDataUnsafe.chat || initDataUnsafe.receiver || undefined;
 
-      if (user) {
-        setUserInfo({
-          id: user?.id || "",
-          firstName: user?.first_name || "",
-          lastName: user?.last_name || "",
-          username: user?.username || "Not set",
-          languageCode: user?.language_code || "en",
-          isPremium: user?.is_premium || false,
-          photoUrl: user?.photo_url || null,
-          initData: tg?.initData || "",
-          initDataUnsafe: initDataUnsafe,
-        });
-      } else {
-        setError("No user data available in Telegram WebApp");
+      // Prefer user.id (1:1 chats). If running inside a group-launched webapp,
+      // Telegram also provides chat.id. We expose both for debugging.
+      if (!initData) {
+        setError("Missing Telegram initData. Please open via the bot.");
       }
 
+      if (!user && !chat) {
+        setError("Telegram did not provide user/chat in initData.");
+      }
+
+      setUserInfo({
+        id: user?.id ?? null,
+        firstName: user?.first_name ?? "",
+        lastName: user?.last_name ?? "",
+        username: user?.username ?? "",
+        languageCode: user?.language_code ?? "en",
+        isPremium: Boolean(user?.is_premium),
+        photoUrl: user?.photo_url ?? null,
+        initData, // <- send to backend as X-TG-Init-Data
+        initDataUnsafe, // visible for debugging only
+      });
+      setChatInfo(chat ?? null);
       setLoading(false);
-    } catch (err) {
-      setError(
-        `Error: ${err instanceof Error ? err.message : "Unknown error"}`
-      );
+    } catch (e: any) {
+      setError(`init error: ${e?.message || String(e)}`);
       setLoading(false);
     }
-  };
+  }, [tg]);
 
-  if (loading) {
-    return (
-      <div className="p-4 border rounded-lg bg-gray-50">
-        <div className="animate-pulse">Loading Telegram user info...</div>
-      </div>
-    );
-  }
+  // Build headers for your API
+  const authHeaders = useMemo(() => {
+    // Always prefer real Telegram header
+    if (userInfo?.initData) {
+      return { "X-TG-Init-Data": userInfo.initData };
+    }
+    // Dev fallback (only if your server has DEV_BYPASS=1)
+    const devChatId =
+      userInfo?.id ??
+      chatInfo?.id ??
+      (typeof window !== "undefined"
+        ? Number(new URLSearchParams(window.location.search).get("chat_id"))
+        : undefined);
+    if (devChatId) return { "X-Dev-Chat-Id": String(devChatId) };
+    return {};
+  }, [userInfo, chatInfo]);
 
-  if (error) {
-    return (
-      <div className="p-4 border border-yellow-400 rounded-lg bg-yellow-50">
-        <div className="font-bold text-yellow-800">⚠️ {error}</div>
-        <div className="mt-2 text-sm text-yellow-700">
-          Open this page in Telegram to see user information.
-        </div>
-      </div>
-    );
-  }
+  // Optional: theme updates
+  useEffect(() => {
+    if (!tg) return;
+    const handler = () => {
+      document.body.style.background = tg.themeParams?.bg_color || "#0f0f0f";
+    };
+    tg.onEvent("themeChanged", handler);
+    handler();
+    return () => tg.offEvent("themeChanged", handler);
+  }, [tg]);
 
-  if (!userInfo) {
-    return (
-      <div className="p-4 border border-red-400 rounded-lg bg-red-50">
-        <div className="font-bold text-red-800">No user data available</div>
-      </div>
-    );
-  }
+  // Render
+  if (loading) return <div>Loading Telegram…</div>;
+  if (error) return <div style={{ color: "tomato" }}>{error}</div>;
 
   return (
-    <div className="p-6 border border-green-400 rounded-lg bg-green-50">
-      <h2 className="text-xl font-bold text-green-800 mb-4">
-        ✅ Telegram User Info
-      </h2>
-
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Chat ID:
-            </label>
-            <div className="mt-1 p-2 bg-white border rounded text-sm font-mono">
-              {userInfo?.id}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Username:
-            </label>
-            <div className="mt-1 p-2 bg-white border rounded text-sm">
-              @{userInfo?.username}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              First Name:
-            </label>
-            <div className="mt-1 p-2 bg-white border rounded text-sm">
-              {userInfo?.firstName}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Last Name:
-            </label>
-            <div className="mt-1 p-2 bg-white border rounded text-sm">
-              {userInfo?.lastName || "Empty"}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Language:
-            </label>
-            <div className="mt-1 p-2 bg-white border rounded text-sm">
-              {userInfo?.languageCode}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Premium:
-            </label>
-            <div className="mt-1 p-2 bg-white border rounded text-sm">
-              {userInfo?.isPremium ? "⭐ Yes" : "No"}
-            </div>
-          </div>
-        </div>
-
-        {userInfo?.photoUrl && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Photo URL:
-            </label>
-            <div className="mt-1 p-2 bg-white border rounded text-sm break-all">
-              {userInfo?.photoUrl}
-            </div>
-          </div>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Init Data Length:
-          </label>
-          <div className="mt-1 p-2 bg-white border rounded text-sm font-mono">
-            {userInfo?.initData?.length} characters
-          </div>
-        </div>
-
-        {/* Raw data for debugging */}
-        <details className="mt-4">
-          <summary className="cursor-pointer text-sm font-medium text-gray-700">
-            Raw initDataUnsafe
-          </summary>
-          <pre className="mt-2 p-3 bg-gray-100 border rounded text-xs overflow-auto">
-            {JSON.stringify(userInfo?.initDataUnsafe, null, 2)}
-          </pre>
-        </details>
-      </div>
+    <div>
+      <h3>Telegram session</h3>
+      <pre style={{ whiteSpace: "pre-wrap" }}>
+        User ID: {userInfo?.id ?? "—"}
+        {"\n"}
+        Chat ID: {chatInfo?.id ?? "—"}
+        {"\n"}
+        Using header:{" "}
+        {authHeaders["X-TG-Init-Data"]
+          ? "X-TG-Init-Data"
+          : authHeaders["X-Dev-Chat-Id"]
+            ? "X-Dev-Chat-Id"
+            : "none"}
+      </pre>
     </div>
   );
 };
