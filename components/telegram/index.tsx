@@ -21,7 +21,6 @@ const TelegramUserInfo = () => {
         return;
       }
 
-      // Initialize Telegram WebApp
       tg.ready();
       tg.expand();
 
