@@ -38,7 +38,8 @@ export const Payment: React.FC = () => {
 
   const { data: subscriptionStatus } = subscribeModels.getStatus.useQuery();
 
-  const { mutate: createSubscription } = subscribeModels.create.useMutation();
+  const { mutate: createSubscription, data } =
+    subscribeModels.create.useMutation();
 
   const handleCreateSubscription = useCallback(
     (protocol: string) => {
@@ -158,6 +159,16 @@ export const Payment: React.FC = () => {
             recovered!
           </span>
         </Alert>
+
+        <div>
+          <p>response of checking status:</p>
+          {JSON.stringify(subscriptionStatus, null, 2)}
+        </div>
+
+        <div>
+          <p>response of create subscription:</p>
+          {JSON.stringify(data, null, 2)}
+        </div>
       </div>
     </div>
   );
