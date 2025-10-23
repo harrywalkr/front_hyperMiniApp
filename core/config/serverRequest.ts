@@ -19,7 +19,7 @@ export async function serverRequest<T>(
   options?: RequestInit
 ): Promise<T> {
   try {
-    const baseUrl = site.urls.apiFull;
+    const baseUrl = site.urls.api;
     const fullUrl = `${baseUrl}/${url}`.replace(/([^:]\/)\/+/g, "$1"); // Prevents double slashes
 
     const response = await fetch(fullUrl, options);
