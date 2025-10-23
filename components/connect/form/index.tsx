@@ -13,8 +13,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleCheckBig, Key, Lock } from "lucide-react";
 import { Alert, Button } from "@heroui/react";
 import { site } from "@/core/config";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useToggle } from "usehooks-ts";
+import { SuccessModal } from "@/core/components";
 
 export const ConnectForm: React.FC = () => {
+  const [success, toggleSuccess] = useToggle(false);
+
   const form = useForm<ConnectFormType>({
     resolver: zodResolver(connectFormSchema),
     defaultValues: {
@@ -25,10 +31,7 @@ export const ConnectForm: React.FC = () => {
   });
 
   return (
-    <Form
-      {...form}
-      onSubmit={form.handleSubmit((values) => console.log(values))}
-    >
+    <Form {...form} onSubmit={form.handleSubmit((values) => toggleSuccess())}>
       <div className="flex flex-col gap-5">
         <div>
           <div className="flex items-center gap-1 mb-1.5">
@@ -106,9 +109,20 @@ export const ConnectForm: React.FC = () => {
             Connect to {site.name}
           </Button>
 
-          <p className="text-center">How to get API credentials?</p>
+          <Link href="/api-guide" className="text-center">
+            How to get API credentials?
+          </Link>
         </div>
       </div>
+
+      <SuccessModal
+        isOpen={success}
+        onCloseAction={toggleSuccess}
+        title="Copy Trading was enabled!"
+        text="your copy trading account is now ready to use"
+        onCloseRedirectUrl="/dashboard/copy-trade-settings"
+        buttonTitle="Got it, let's go!"
+      />
     </Form>
   );
 };

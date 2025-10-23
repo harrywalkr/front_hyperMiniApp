@@ -3,6 +3,7 @@ import { Back } from "@/common";
 import { Step, Steps } from "@/common/steps";
 import { Button } from "@heroui/react";
 import { CircleAlert, CircleCheck, ShieldAlert } from "lucide-react";
+import Link from "next/link";
 
 export const ApiGuide: React.FC = () => {
   return (
@@ -158,9 +159,11 @@ export const ApiGuide: React.FC = () => {
           </div>
         </div>
 
-        <Button fullWidth radius="full" color="primary">
-          Got it, back to login
-        </Button>
+        <Link href="/login">
+          <Button fullWidth radius="full" color="primary">
+            Got it, back to login
+          </Button>
+        </Link>
       </div>
     </div>
   );

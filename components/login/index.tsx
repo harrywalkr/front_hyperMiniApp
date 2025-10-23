@@ -1,8 +1,8 @@
 "use client";
-
 import { Logo } from "@/common";
 import { Button } from "@heroui/react";
 import { CreditCard, Send } from "lucide-react";
+import Link from "next/link";
 
 export const Login: React.FC = () => {
   return (
@@ -28,16 +28,18 @@ export const Login: React.FC = () => {
           Join @bitfaprobot for free
         </Button>
 
-        <Button
-          fullWidth
-          variant="ghost"
-          color="primary"
-          startContent={<CreditCard size={20} />}
-          size="lg"
-          radius="full"
-        >
-          Subscribe for $20/mo
-        </Button>
+        <Link href="/pay">
+          <Button
+            fullWidth
+            variant="ghost"
+            color="primary"
+            startContent={<CreditCard size={20} />}
+            size="lg"
+            radius="full"
+          >
+            Subscribe for $20/mo
+          </Button>
+        </Link>
       </div>
     </div>
   );
