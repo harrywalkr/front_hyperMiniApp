@@ -7,3 +7,4 @@ export { toIsoDate } from "./toIsoDate";
 export { arrayToString } from "./arrayToString";
 export { toStringArray } from "./toStringArray";
 export { MetadataBuilder } from "./metadata-builder";
+export { getTgChatId } from "./getTgChatId";
