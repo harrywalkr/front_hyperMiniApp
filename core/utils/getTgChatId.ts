@@ -67,7 +67,7 @@ async function waitForTelegramWebApp(maxMs = 5000, stepMs = 5) {
 export async function getTgChatId() {
   let cancelled = false;
 
-  const tg = await waitForTelegramWebApp(5000, 50);
+  const tg = await waitForTelegramWebApp(1000, 100);
 
   const hashInitData = getInitDataFromHash();
   const hashUnsafe = parseInitDataUnsafe(hashInitData);

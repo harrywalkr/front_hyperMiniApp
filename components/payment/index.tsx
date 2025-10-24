@@ -14,17 +14,12 @@ export const Payment: React.FC = () => {
 
   const [selectedProtocol, setSelectedProtocol] = useState<string>("usdtbsc");
 
-  const { remainingTime, start } = useTimer({
+  const { remainingTime, restart } = useTimer({
     initialSeconds: 10 * 60,
+    autoStart: true,
     onTimeDone: () => {
       router.refresh();
     },
-  });
-
-  const autoFetchTimer = useTimer({
-    initialSeconds: 16,
-    loop: true,
-    autoStart: true,
   });
 
   const [, copyToClipboard] = useCopyToClipboard();
@@ -50,16 +45,24 @@ export const Payment: React.FC = () => {
     [copyToClipboard]
   );
 
-  const { data: subscriptionStatus, isFetching } =
-    subscribeModels.getStatus.useQuery({ refetchInterval: 15000 });
-
   const { mutate: createSubscription, data } =
     subscribeModels.create.useMutation({
-      onSuccess: (response) => {
-        const seconds = response?.minutes_left * 60 + response?.seconds_left;
-        start(seconds);
+      onSuccess: () => {
+        restart();
       },
     });
+
+  const { data: subscriptionStatus, isFetching } =
+    subscribeModels.getStatus.useQuery({
+      refetchInterval: 15000,
+      enabled: Boolean(data),
+    });
+
+  const autoFetchTimer = useTimer({
+    initialSeconds: 16,
+    loop: true,
+    autoStart: Boolean(data),
+  });
 
   const handleCreateSubscription = useCallback(
     (protocol: string) => {
