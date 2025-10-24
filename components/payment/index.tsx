@@ -1,53 +1,89 @@
 "use client";
 import { Back, Logo } from "@/common";
 import { addToast, Alert, Button } from "@heroui/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Copy } from "lucide-react";
 import { useCopyToClipboard } from "usehooks-ts";
 import { subscribeModels } from "@/models/subscribe";
 import { useTimer } from "@/core/hooks";
+import { useRouter } from "next/navigation";
 
 export const Payment: React.FC = () => {
+  const router = useRouter();
+
   const [selectedProtocol, setSelectedProtocol] = useState<string>("usdtbsc");
 
-  const { remainingTime } = useTimer({
-    initialSeconds: 30 * 60,
+  const { remainingTime, start } = useTimer({
+    initialSeconds: 10 * 60,
+    onTimeDone: () => {
+      router.refresh();
+    },
+  });
+
+  const autoFetchTimer = useTimer({
+    initialSeconds: 16,
+    loop: true,
     autoStart: true,
   });
 
   const [, copyToClipboard] = useCopyToClipboard();
 
-  const handleCopyAddress = useCallback(() => {
-    copyToClipboard("TEPLkh9svaunDzgSAa67Q9FxnbrLhV8xJa")
-      .then(() => {
-        addToast({
-          title: "Address copied to clipboard",
-          description: "You can now paste it anywhere",
-          color: "success",
+  const handleCopyAddress = useCallback(
+    (address: string) => {
+      copyToClipboard(address)
+        .then(() => {
+          addToast({
+            title: "Address copied to clipboard",
+            description: "You can now paste it anywhere",
+            color: "success",
+          });
+        })
+        .catch(() => {
+          addToast({
+            title: "Failed to copy address",
+            description: "Please try again",
+            color: "danger",
+          });
         });
-      })
-      .catch(() => {
-        addToast({
-          title: "Failed to copy address",
-          description: "Please try again",
-          color: "danger",
-        });
-      });
-  }, [copyToClipboard]);
+    },
+    [copyToClipboard]
+  );
 
-  const { data: subscriptionStatus } = subscribeModels.getStatus.useQuery();
+  const { data: subscriptionStatus, isFetching } =
+    subscribeModels.getStatus.useQuery({ refetchInterval: 15000 });
 
   const { mutate: createSubscription, data } =
-    subscribeModels.create.useMutation();
+    subscribeModels.create.useMutation({
+      onSuccess: (response) => {
+        const seconds = response?.minutes_left * 60 + response?.seconds_left;
+        start(seconds);
+      },
+    });
 
   const handleCreateSubscription = useCallback(
     (protocol: string) => {
       setSelectedProtocol(protocol);
-      createSubscription({ payCurrency: protocol });
     },
     [createSubscription]
   );
+
+  const handleCreateSubscriptionPayment = useEffectEvent((prtc: string) => {
+    createSubscription({ payCurrency: prtc });
+  });
+
+  useEffect(() => {
+    if (selectedProtocol) {
+      handleCreateSubscriptionPayment(selectedProtocol);
+    }
+  }, [selectedProtocol]);
+
+  useEffect(() => {
+    if (subscriptionStatus?.status === "confirmed") {
+      addToast({ title: "Payment Succesful" });
+      router.push("/transactions");
+    }
+  }, [subscriptionStatus]);
 
   return (
     <div>
@@ -91,10 +127,12 @@ export const Payment: React.FC = () => {
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold">Pay with BEP20</h3>
+          <h3 className="text-lg font-semibold">
+            Pay with {selectedProtocol.toUpperCase()}
+          </h3>
           <p className="leading-relaxed mt-1">
             Users need to transfer assets to the address below, please complete
-            the transfer within 30 minutes
+            the transfer within {data?.minutes_left ?? "-"} minutes
           </p>
         </div>
 
@@ -104,7 +142,7 @@ export const Payment: React.FC = () => {
             {remainingTime.seconds}
           </p>
 
-          <p className="text-center">Left to finish the process</p>
+          <p className="text-center">Left to finish the process.</p>
 
           <p className="text-center text-primary font-medium">
             Currently, this merchant only supports the deposit and withdrawal of
@@ -112,11 +150,13 @@ export const Payment: React.FC = () => {
           </p>
 
           <div className="flex flex-col gap-y-1 items-center">
-            <p className="text-lg">Payment Amount (BEP20)</p>
+            <p className="text-lg">Payment Amount ({selectedProtocol})</p>
 
-            <p className="text-center text-lg font-semibold text-primary">20</p>
+            <p className="text-center text-lg font-semibold text-primary">
+              {data?.pay_amount}
+            </p>
 
-            <p className="text-center">≈ 20 USD</p>
+            <p className="text-center">≈ {data?.price_amount} USD</p>
           </div>
         </div>
 
@@ -125,20 +165,33 @@ export const Payment: React.FC = () => {
             Scan the QR code and pay immediately
           </p>
 
-          <QRCodeSVG value="TEPLkh9svaunDzgSAa67Q9FxnbrLhV8xJa" size={200} />
+          <QRCodeSVG value={data?.pay_address ?? ""} size={200} />
 
-          <p className="text-center text-default-700">
-            Get the user payment results every 15s
-          </p>
+          {isFetching ? (
+            <p className="text-center text-default-700">
+              Checking Payment Result ...
+            </p>
+          ) : subscriptionStatus?.status === "confirmed" ? (
+            <p className="text-center text-success">
+              Payment succeed, redirecting ...
+            </p>
+          ) : subscriptionStatus?.status === "expired" ? (
+            <p className="text-center text-danger">
+              payment failded, try again
+            </p>
+          ) : (
+            <p className="text-center text-default-700">
+              Get the user payment results every
+              {` ${autoFetchTimer?.remainingTime?.seconds}s`}
+            </p>
+          )}
 
-          <p className="text-center font-medium">
-            TEPLkh9svaunDzgSAa67Q9FxnbrLhV8xJa
-          </p>
+          <p className="text-center font-medium">{data?.pay_address}</p>
 
           <Button
             variant="light"
             endContent={<Copy size={16} />}
-            onPress={handleCopyAddress}
+            onPress={() => handleCopyAddress(data?.pay_address ?? "")}
           >
             Copy Address
           </Button>
@@ -159,16 +212,6 @@ export const Payment: React.FC = () => {
             recovered!
           </span>
         </Alert>
-
-        <div>
-          <p>response of checking status:</p>
-          {JSON.stringify(subscriptionStatus, null, 2)}
-        </div>
-
-        <div>
-          <p>response of create subscription:</p>
-          {JSON.stringify(data, null, 2)}
-        </div>
       </div>
     </div>
   );

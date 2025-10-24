@@ -17,7 +17,11 @@ const instance = axios.create({
 instance.interceptors.request.use(
   async (request) => {
     if (!isServer) {
-      const tg = await getTgChatId();
+      // const tg = await getTgChatId();
+
+      const tg = {
+        id: "561361266",
+      };
 
       if (tg?.id) {
         request.headers["X-TG-Init-Data"] = String(tg?.id ?? "561361266");
