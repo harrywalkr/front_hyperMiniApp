@@ -5,7 +5,7 @@ import { GetSubscriptionStatusResponse } from "./types";
 export const useGetSubscriptionStatus = createQuery({
   queryKey: ["subscription-status"],
   fetcher: async () => {
-    const url = "/api/subscribe/status";
+    const url = "/subscribe/status";
 
     const response =
       await clientRequest.get<GetSubscriptionStatusResponse>(url);

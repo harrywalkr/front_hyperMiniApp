@@ -6,6 +6,7 @@ interface UseTimerOptions {
   initialSeconds?: number;
   autoStart?: boolean;
   onTimeDone?: VoidFunction;
+  loop?: boolean;
 }
 
 interface TimeObject {
@@ -16,7 +17,7 @@ interface TimeObject {
 }
 
 interface UseTimerReturn {
-  start: () => void;
+  start: (seconds?: number) => void;
   reset: () => void;
   restart: () => void;
   isTimeDone: boolean;
@@ -41,13 +42,23 @@ export const useTimer = ({
   initialSeconds = 180,
   autoStart = true,
   onTimeDone,
+  loop = false,
 }: UseTimerOptions = {}): UseTimerReturn => {
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const [isTimeDone, setIsTimeDone] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const start = () => {
+  const start = (seconds?: number) => {
     if (intervalRef.current) return;
+
+    // Validate and set custom time
+    if (seconds !== undefined) {
+      if (seconds < 0) {
+        console.warn("Timer cannot start with negative seconds");
+        return;
+      }
+      setRemainingSeconds(Math.floor(seconds));
+    }
 
     setIsTimeDone(false);
     intervalRef.current = setInterval(() => {
@@ -76,6 +87,14 @@ export const useTimer = ({
   useEffect(() => {
     if (autoStart) start();
   }, [autoStart]);
+
+  useEffect(() => {
+    if (loop && isTimeDone) {
+      reset();
+      start(initialSeconds);
+      setIsTimeDone(false);
+    }
+  }, [loop, isTimeDone]);
 
   const restart = () => {
     reset();

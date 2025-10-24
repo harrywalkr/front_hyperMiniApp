@@ -1,9 +1,7 @@
 "use client";
-
 import {
   ControlledAutocomplete,
   ControlledInput,
-  ControlledSelect,
   Form,
 } from "@/core/components/form";
 import { useForm } from "react-hook-form";
@@ -14,9 +12,10 @@ import { CircleCheckBig, Key, Lock } from "lucide-react";
 import { Alert, Button } from "@heroui/react";
 import { site } from "@/core/config";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useToggle } from "usehooks-ts";
 import { SuccessModal } from "@/core/components";
+import { copyTradingModels } from "@/models/copy-trading";
+import { useCallback } from "react";
 
 export const ConnectForm: React.FC = () => {
   const [success, toggleSuccess] = useToggle(false);
@@ -30,8 +29,22 @@ export const ConnectForm: React.FC = () => {
     },
   });
 
+  const { mutate: enableCopyTrading } =
+    copyTradingModels.enableCopyTrading.useMutation({
+      onSuccess: () => {
+        toggleSuccess();
+      },
+    });
+
+  const handleSubmit = useCallback(
+    (values: ConnectFormType) => {
+      enableCopyTrading(values);
+    },
+    [enableCopyTrading]
+  );
+
   return (
-    <Form {...form} onSubmit={form.handleSubmit((values) => toggleSuccess())}>
+    <Form {...form} onSubmit={form.handleSubmit(handleSubmit)}>
       <div className="flex flex-col gap-5">
         <div>
           <div className="flex items-center gap-1 mb-1.5">
@@ -45,7 +58,8 @@ export const ConnectForm: React.FC = () => {
             size="lg"
             items={[
               { label: "Binance", key: "binance" },
-              { label: "Kucoin", key: "kucoin" },
+              { label: "Bitunix", key: "bitunix" },
+              { label: "Bybit", key: "bybit" },
             ]}
           />
         </div>

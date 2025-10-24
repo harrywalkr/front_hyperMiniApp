@@ -159,9 +159,9 @@ export const ApiGuide: React.FC = () => {
           </div>
         </div>
 
-        <Link href="/login">
+        <Link href="/connect">
           <Button fullWidth radius="full" color="primary">
-            Got it, back to login
+            Got it, let's do it!
           </Button>
         </Link>
       </div>

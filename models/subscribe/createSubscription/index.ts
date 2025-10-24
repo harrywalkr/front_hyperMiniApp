@@ -7,7 +7,7 @@ import {
 
 export const useCreateSubscription = createMutation({
   mutationFn: async (variables: CreateSubscriptionVariables) => {
-    const url = "/api/subscribe/create";
+    const url = "/subscribe/create";
 
     const response = await clientRequest.post<CreateSubscriptionResponse>(
       url,

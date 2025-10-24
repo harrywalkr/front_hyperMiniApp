@@ -12,10 +12,26 @@ export const DashboardFollowingAddresses: React.FC = () => {
       <SearchCm />
 
       <div className="flex flex-col gap-y-3 mt-6">
-        <WalletCard isFollowed />
-        <WalletCard isFollowed />
-        <WalletCard isFollowed />
-        <WalletCard isFollowed />
+        <WalletCard
+          isFollowed
+          address={"0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00"}
+          label={"Big Whale"}
+        />
+        <WalletCard
+          isFollowed
+          address={"0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00"}
+          label={"Big Whale"}
+        />
+        <WalletCard
+          isFollowed
+          address={"0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00"}
+          label={"Big Whale"}
+        />
+        <WalletCard
+          isFollowed
+          address={"0xecb63caa47c7c4e77f60f1ce858cf28dc2b82b00"}
+          label={"Big Whale"}
+        />
       </div>
 
       <NavigationBar />
