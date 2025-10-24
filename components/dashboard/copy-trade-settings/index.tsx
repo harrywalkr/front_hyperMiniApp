@@ -9,18 +9,47 @@ import { CopyTradeFormType } from "./types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { copyTradeFormSchema } from "./schema";
 import { NavigationBar } from "@/common/navigation-bar";
+import { copyTradingModels } from "@/models/copy-trading";
+import { useCallback } from "react";
+import { SuccessModal } from "@/core/components";
+import { useToggle } from "usehooks-ts";
 
 export const CopyTradeSettings: React.FC = () => {
+  const [success, toggleSuccess] = useToggle(false);
+
   const form = useForm<CopyTradeFormType>({
     resolver: zodResolver(copyTradeFormSchema),
     defaultValues: {
-      fixedSize: undefined,
-      maxDailyOpens: undefined,
-      maxDrawdown: undefined,
-      stopLoss: undefined,
-      takeProfit: undefined,
+      fixedSize: 0,
+      maxDailyOpens: 0,
+      maxDrawdown: 0,
+      stopLoss: 0,
+      takeProfit: 0,
     },
   });
+
+  const { mutate: setSettings, isPending } =
+    copyTradingModels.setSettings.useMutation({
+      onSuccess: () => {
+        toggleSuccess();
+      },
+    });
+
+  const handleSubmit = useCallback(
+    (values: CopyTradeFormType) => {
+      const { fixedSize, maxDailyOpens, maxDrawdown, stopLoss, takeProfit } =
+        values;
+
+      setSettings({
+        draw: maxDrawdown ?? 0,
+        fixed: fixedSize ?? 0,
+        maxpos: maxDailyOpens ?? 0,
+        sl: stopLoss ?? 0,
+        tp: takeProfit ?? 0,
+      });
+    },
+    [setSettings]
+  );
 
   return (
     <div>
@@ -46,7 +75,7 @@ export const CopyTradeSettings: React.FC = () => {
         </div>
 
         <div className="w-full">
-          <Form {...form}>
+          <Form {...form} onSubmit={form.handleSubmit(handleSubmit)}>
             <div className="w-full flex flex-col gap-y-5">
               <ControlledNumberInput
                 name="fixedSize"
@@ -56,6 +85,7 @@ export const CopyTradeSettings: React.FC = () => {
                 startContent={undefined}
                 labelPlacement="outside-top"
                 endContent={undefined}
+                description="Margin used for 20X leverage ≈ $0.40 (=$8 ÷ 20)"
               />
 
               <ControlledNumberInput
@@ -75,9 +105,7 @@ export const CopyTradeSettings: React.FC = () => {
                 size="lg"
                 startContent={undefined}
                 labelPlacement="outside-top"
-                endContent={
-                  <div className="bg-primary-50 py-0.5 px-3 rounded-md">X%</div>
-                }
+                endContent={undefined}
               />
 
               <ControlledNumberInput
@@ -87,9 +115,7 @@ export const CopyTradeSettings: React.FC = () => {
                 size="lg"
                 startContent={undefined}
                 labelPlacement="outside-top"
-                endContent={
-                  <div className="bg-primary-50 py-0.5 px-3 rounded-md">X%</div>
-                }
+                endContent={undefined}
               />
 
               <ControlledNumberInput
@@ -99,12 +125,17 @@ export const CopyTradeSettings: React.FC = () => {
                 size="lg"
                 startContent={undefined}
                 labelPlacement="outside-top"
-                endContent={
-                  <div className="bg-primary-50 py-0.5 px-3 rounded-md">X%</div>
-                }
+                endContent={undefined}
               />
 
-              <Button radius="full" fullWidth color="primary" size="lg">
+              <Button
+                radius="full"
+                fullWidth
+                type="submit"
+                color="primary"
+                size="lg"
+                isLoading={isPending}
+              >
                 Confirm & Start Copy
               </Button>
             </div>
@@ -113,6 +144,15 @@ export const CopyTradeSettings: React.FC = () => {
       </div>
 
       <NavigationBar />
+
+      <SuccessModal
+        isOpen={success}
+        onCloseAction={toggleSuccess}
+        title="Settings Saved"
+        text="Your Copy trading settings saved successfuly!"
+        buttonTitle="lets follow wallets"
+        onCloseRedirectUrl="/dashboard/addresses"
+      />
     </div>
   );
 };

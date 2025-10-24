@@ -12,8 +12,12 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
+import { positionsModels } from "@/models/positions";
+import { TableLoading } from "@/core/components";
 
 export const MyOpenPositions: React.FC = () => {
+  const { data, isFetching } = positionsModels.getOpenPositions.useQuery();
+
   return (
     <div>
       <Back title="My Open Positions" />
@@ -51,78 +55,50 @@ export const MyOpenPositions: React.FC = () => {
               <TableColumn>Action</TableColumn>
             </TableHeader>
 
-            <TableBody>
-              <TableRow>
-                <TableCell>BTCUSDT</TableCell>
-                <TableCell className="text-primary">Buy</TableCell>
-                <TableCell>17</TableCell>
-                <TableCell className="text-primary">+0.35(+2.5%)</TableCell>
-                <TableCell>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    isIconOnly
-                    radius="full"
-                    color="danger"
-                  >
-                    <X size={19} strokeWidth={1.6} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-
-              <TableRow>
-                <TableCell>BTCUSDT</TableCell>
-                <TableCell className="text-danger">Sell</TableCell>
-                <TableCell>17</TableCell>
-                <TableCell className="text-danger">-0.35(-2.5%)</TableCell>
-                <TableCell>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    isIconOnly
-                    radius="full"
-                    color="danger"
-                  >
-                    <X size={19} strokeWidth={1.6} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-
-              <TableRow>
-                <TableCell>BTCUSDT</TableCell>
-                <TableCell className="text-primary">Buy</TableCell>
-                <TableCell>17</TableCell>
-                <TableCell className="text-primary">+0.35(+2.5%)</TableCell>
-                <TableCell>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    isIconOnly
-                    radius="full"
-                    color="danger"
-                  >
-                    <X size={19} strokeWidth={1.6} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-
-              <TableRow>
-                <TableCell>BTCUSDT</TableCell>
-                <TableCell className="text-danger">Sell</TableCell>
-                <TableCell>17</TableCell>
-                <TableCell className="text-danger">-0.35(-2.5%)</TableCell>
-                <TableCell>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    isIconOnly
-                    radius="full"
-                    color="danger"
-                  >
-                    <X size={19} strokeWidth={1.6} />
-                  </Button>
-                </TableCell>
-              </TableRow>
+            <TableBody
+              isLoading={isFetching}
+              emptyContent={"No Open positions yet!"}
+              loadingContent={<TableLoading />}
+            >
+              {!data?.length
+                ? []
+                : data?.map((item) => {
+                    return (
+                      <TableRow key={item?.positionId}>
+                        <TableCell>{item?.symbol}</TableCell>
+                        <TableCell
+                          className={
+                            item?.side === "BUY"
+                              ? "text-primary"
+                              : "text-danger"
+                          }
+                        >
+                          {item?.side}
+                        </TableCell>
+                        <TableCell>{item?.qty}</TableCell>
+                        <TableCell
+                          className={
+                            item?.unrealizedPNL > 0
+                              ? "text-primary"
+                              : "text-danger"
+                          }
+                        >
+                          {item?.unrealizedPNL}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="light"
+                            size="sm"
+                            isIconOnly
+                            radius="full"
+                            color="danger"
+                          >
+                            <X size={19} strokeWidth={1.6} />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
             </TableBody>
           </Table>
         </div>

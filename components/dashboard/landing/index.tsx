@@ -1,10 +1,11 @@
 "use client";
 
 import { NavigationBar } from "@/common/navigation-bar";
+import { TableLoading } from "@/core/components";
 import { thousandSeperator } from "@/core/utils";
+import { positionsModels } from "@/models/positions";
 import {
   Button,
-  Checkbox,
   Switch,
   Table,
   TableBody,
@@ -14,16 +15,8 @@ import {
   TableRow,
 } from "@heroui/react";
 import { Settings, TrendingUp, Users, X } from "lucide-react";
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import Link from "next/link";
+import { Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
 const data = [
   {
@@ -53,6 +46,8 @@ const data = [
 ];
 
 export const DashboardLanding: React.FC = () => {
+  const { data, isFetching } = positionsModels.getOpenPositions.useQuery();
+
   return (
     <div className="flex flex-col gap-y-6">
       <div className="flex items-center justify-between mb-3">
@@ -153,102 +148,76 @@ export const DashboardLanding: React.FC = () => {
             <TableColumn>Action</TableColumn>
           </TableHeader>
 
-          <TableBody>
-            <TableRow>
-              <TableCell>BTCUSDT</TableCell>
-              <TableCell className="text-primary">Buy</TableCell>
-              <TableCell>17</TableCell>
-              <TableCell className="text-primary">+0.35(+2.5%)</TableCell>
-              <TableCell>
-                <Button
-                  variant="light"
-                  size="sm"
-                  isIconOnly
-                  radius="full"
-                  color="danger"
-                >
-                  <X size={19} strokeWidth={1.6} />
-                </Button>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell>BTCUSDT</TableCell>
-              <TableCell className="text-danger">Sell</TableCell>
-              <TableCell>17</TableCell>
-              <TableCell className="text-danger">-0.35(-2.5%)</TableCell>
-              <TableCell>
-                <Button
-                  variant="light"
-                  size="sm"
-                  isIconOnly
-                  radius="full"
-                  color="danger"
-                >
-                  <X size={19} strokeWidth={1.6} />
-                </Button>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell>BTCUSDT</TableCell>
-              <TableCell className="text-primary">Buy</TableCell>
-              <TableCell>17</TableCell>
-              <TableCell className="text-primary">+0.35(+2.5%)</TableCell>
-              <TableCell>
-                <Button
-                  variant="light"
-                  size="sm"
-                  isIconOnly
-                  radius="full"
-                  color="danger"
-                >
-                  <X size={19} strokeWidth={1.6} />
-                </Button>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell>BTCUSDT</TableCell>
-              <TableCell className="text-danger">Sell</TableCell>
-              <TableCell>17</TableCell>
-              <TableCell className="text-danger">-0.35(-2.5%)</TableCell>
-              <TableCell>
-                <Button
-                  variant="light"
-                  size="sm"
-                  isIconOnly
-                  radius="full"
-                  color="danger"
-                >
-                  <X size={19} strokeWidth={1.6} />
-                </Button>
-              </TableCell>
-            </TableRow>
+          <TableBody
+            isLoading={isFetching}
+            emptyContent={"No Open positions yet!"}
+            loadingContent={<TableLoading />}
+          >
+            {!data?.length
+              ? []
+              : data?.map((item) => {
+                  return (
+                    <TableRow key={item?.positionId}>
+                      <TableCell>{item?.symbol}</TableCell>
+                      <TableCell
+                        className={
+                          item?.side === "BUY" ? "text-primary" : "text-danger"
+                        }
+                      >
+                        {item?.side}
+                      </TableCell>
+                      <TableCell>{item?.qty}</TableCell>
+                      <TableCell
+                        className={
+                          item?.unrealizedPNL > 0
+                            ? "text-primary"
+                            : "text-danger"
+                        }
+                      >
+                        {item?.unrealizedPNL}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="light"
+                          size="sm"
+                          isIconOnly
+                          radius="full"
+                          color="danger"
+                        >
+                          <X size={19} strokeWidth={1.6} />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
           </TableBody>
         </Table>
       </div>
 
       <div className="flex flex-col gap-3 w-full">
-        <Button
-          fullWidth
-          variant="ghost"
-          radius="full"
-          color="primary"
-          startContent={<Users size={19} strokeWidth={1.6} />}
-        >
-          My Followed Traders
-        </Button>
+        <Link href="/dashboard/following-addresses">
+          <Button
+            fullWidth
+            variant="ghost"
+            radius="full"
+            color="primary"
+            startContent={<Users size={19} strokeWidth={1.6} />}
+          >
+            My Followed Traders
+          </Button>
+        </Link>
 
-        <Button
-          fullWidth
-          variant="ghost"
-          radius="full"
-          color="primary"
-          startContent={<TrendingUp size={19} strokeWidth={1.6} />}
-        >
-          Browse Traders
-        </Button>
+        <Link href="/dashboard/addresses">
+          <Button
+            fullWidth
+            variant="ghost"
+            radius="full"
+            color="primary"
+            startContent={<TrendingUp size={19} strokeWidth={1.6} />}
+          >
+            Browse Traders
+          </Button>
+        </Link>
       </div>
 
       <NavigationBar />
