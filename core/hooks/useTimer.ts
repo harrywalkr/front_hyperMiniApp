@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface UseTimerOptions {
-  initialSeconds?: number;
+  initialSeconds?: number | null;
   autoStart?: boolean;
   onTimeDone?: VoidFunction;
   loop?: boolean;
@@ -24,7 +24,11 @@ interface UseTimerReturn {
   remainingTime: TimeObject;
 }
 
-const secondsToTimeObject = (totalSeconds: number): TimeObject => {
+const secondsToTimeObject = (totalSeconds: number | null): TimeObject => {
+  if (!totalSeconds || totalSeconds <= 0) {
+    return { days: "00", hours: "00", minutes: "00", seconds: "00" };
+  }
+
   const days = Math.floor(totalSeconds / 86400);
   const hours = Math.floor((totalSeconds % 86400) / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -47,67 +51,81 @@ export const useTimer = ({
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const [isTimeDone, setIsTimeDone] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const onTimeDoneRef = useRef(onTimeDone);
+  const initialSecondsRef = useRef(initialSeconds);
 
-  const start = (seconds?: number) => {
-    if (intervalRef.current) return;
+  // Update refs when props change
+  useEffect(() => {
+    onTimeDoneRef.current = onTimeDone;
+    initialSecondsRef.current = initialSeconds;
+  }, [onTimeDone, initialSeconds]);
 
-    // Validate and set custom time
-    if (seconds !== undefined) {
-      if (seconds < 0) {
-        console.warn("Timer cannot start with negative seconds");
-        return;
-      }
-      setRemainingSeconds(Math.floor(seconds));
-    }
-
-    setIsTimeDone(false);
-    intervalRef.current = setInterval(() => {
-      setRemainingSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(intervalRef.current!);
-          intervalRef.current = null;
-          setIsTimeDone(true);
-          onTimeDone?.();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const reset = () => {
+  const clearTimer = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    setRemainingSeconds(initialSeconds);
-    setIsTimeDone(false);
-  };
+  }, []);
 
-  useEffect(() => {
-    if (autoStart) start();
-  }, [autoStart]);
+  const start = useCallback(
+    (seconds?: number) => {
+      clearTimer();
 
-  useEffect(() => {
-    if (loop && isTimeDone) {
-      reset();
-      start(initialSeconds);
+      if (seconds !== undefined) {
+        setRemainingSeconds(seconds);
+      }
+
       setIsTimeDone(false);
-    }
-  }, [loop, isTimeDone]);
 
-  const restart = () => {
+      intervalRef.current = setInterval(() => {
+        setRemainingSeconds((prev) => {
+          if (prev === null || prev <= 0) return prev;
+
+          if (prev <= 1) {
+            clearTimer();
+            setIsTimeDone(true);
+            onTimeDoneRef.current?.();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    },
+    [clearTimer]
+  );
+
+  const reset = useCallback(() => {
+    clearTimer();
+    setRemainingSeconds(initialSecondsRef.current);
+    setIsTimeDone(false);
+  }, [clearTimer]);
+
+  const restart = useCallback(() => {
     reset();
     start();
-  };
+  }, [reset, start]);
 
+  // Auto start
   useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, []);
+    if (autoStart && remainingSeconds && remainingSeconds > 0) {
+      start();
+    }
+
+    return clearTimer;
+  }, [autoStart, clearTimer, start]);
+
+  // Handle looping
+  useEffect(() => {
+    if (
+      loop &&
+      isTimeDone &&
+      initialSecondsRef.current &&
+      initialSecondsRef.current > 0
+    ) {
+      reset();
+      start();
+    }
+  }, [loop, isTimeDone, reset, start]);
 
   return {
     start,
