@@ -4,7 +4,7 @@ export const site = {
   title: "HyperLiquid",
   description: "Your Gateway to the Future",
   urls: {
-    api: process.env.NEXT_PUBLIC_API,
-    domain: process.env.NEXT_PUBLIC_DOMAIN,
+    api: "https://mini.bitfx.com/api",
+    domain: "https://mini.bitfx.com",
   },
 };

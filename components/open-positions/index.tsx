@@ -14,6 +14,7 @@ import {
 } from "@heroui/react";
 import { positionsModels } from "@/models/positions";
 import { TableLoading } from "@/core/components";
+import { NavigationBar } from "@/common/navigation-bar";
 
 export const MyOpenPositions: React.FC = () => {
   const { data, isFetching } = positionsModels.getOpenPositions.useQuery();
@@ -103,6 +104,8 @@ export const MyOpenPositions: React.FC = () => {
           </Table>
         </div>
       </div>
+
+      <NavigationBar />
     </div>
   );
 };

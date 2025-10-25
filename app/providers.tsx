@@ -7,6 +7,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import NextTopLoader from "nextjs-toploader";
 import { ToastProvider } from "@heroui/toast";
 import { getQueryClient } from "@/core/config";
+import { HelperProvider } from "./helperProvider";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -43,7 +44,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
             }}
           />
 
-          {children}
+          <HelperProvider>{children}</HelperProvider>
         </ThemeProvider>
       </HeroUIProvider>
     </QueryClientProvider>

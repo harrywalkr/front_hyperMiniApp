@@ -3,7 +3,6 @@ import { Metadata, Viewport } from "next";
 import clsx from "clsx";
 import { Providers } from "./providers";
 import { fontSans, site } from "@/core/config";
-import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   generator: "Next.js",

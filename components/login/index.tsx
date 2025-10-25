@@ -1,5 +1,4 @@
 "use client";
-import { Logo } from "@/common";
 import { Button } from "@heroui/react";
 import { CreditCard, Send } from "lucide-react";
 import Link from "next/link";
@@ -9,24 +8,22 @@ export const Login: React.FC = () => {
     <div className="flex flex-col gap-4 items-center justify-between h-fulls grow">
       <div></div>
 
-      <div>
-        <Logo direction="vertical" />
-      </div>
-
       <div className="w-full flex flex-col gap-4 mb-10">
         <p className="text-center font-medium text-base">
           You need to subscribe:
         </p>
 
-        <Button
-          fullWidth
-          color="primary"
-          startContent={<Send size={20} />}
-          size="lg"
-          radius="full"
-        >
-          Join @bitfaprobot for free
-        </Button>
+        <a href="https://t.me/bitfaprobot" target="_blank">
+          <Button
+            fullWidth
+            color="primary"
+            startContent={<Send size={20} />}
+            size="lg"
+            radius="full"
+          >
+            Join @bitfaprobot for free
+          </Button>
+        </a>
 
         <Link href="/pay">
           <Button

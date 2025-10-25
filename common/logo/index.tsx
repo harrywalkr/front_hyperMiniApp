@@ -36,8 +36,8 @@ export const Logo: React.FC<LogoProps> = ({
               direction === "vertical" && "text-center"
             )}
           >
-            You are subscribed user and eligible to use{" "}
-            <strong>HyperLiquid</strong> app!
+            You are subscribed user and eligible to use
+            <strong className="pl-1">HyperLiquid</strong> app!
           </p>
         )}
       </div>

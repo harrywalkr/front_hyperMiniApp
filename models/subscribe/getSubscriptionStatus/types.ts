@@ -1,4 +1,20 @@
-export type SubscriptionStatus = "waiting" | "confirmed" | "expired";
+export type SubscriptionStatus =
+  | "waiting"
+  | "confirmed"
+  | "failed"
+  | "finished"
+  | "canceled"
+  | "expired";
+
+export const subscriptionFailedStatuses: SubscriptionStatus[] = [
+  "failed",
+  "canceled",
+  "expired",
+];
+export const subscriptionSuccessStatuses: SubscriptionStatus[] = [
+  "confirmed",
+  "finished",
+];
 
 export type GetSubscriptionStatusResponse = {
   payment_id: string;

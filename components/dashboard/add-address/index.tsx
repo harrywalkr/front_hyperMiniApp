@@ -1,5 +1,5 @@
 "use client";
-import { Back, Logo } from "@/common";
+import { Back } from "@/common";
 import { ControlledInput, Form } from "@/core/components/form";
 import { useForm } from "react-hook-form";
 import { AddAddressFormType } from "./types";
@@ -7,8 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { addAddressSchema } from "./schema";
 import { addToast, Button } from "@heroui/react";
 import { addressModels } from "@/models/address";
+import { useRouter } from "next/navigation";
 
 export const AddAddress: React.FC = () => {
+  const router = useRouter();
+
   const form = useForm<AddAddressFormType>({
     resolver: zodResolver(addAddressSchema),
     defaultValues: {
@@ -21,6 +24,7 @@ export const AddAddress: React.FC = () => {
     onSuccess: () => {
       addToast({ title: "Address Saved", color: "success" });
       form.reset();
+      router.push("/dashboard/addresses");
     },
     onError: (error: any) => {
       addToast({
@@ -33,8 +37,6 @@ export const AddAddress: React.FC = () => {
   return (
     <div>
       <Back title="Add Address" />
-
-      <Logo showDescription />
 
       <div className="mt-8">
         <Form

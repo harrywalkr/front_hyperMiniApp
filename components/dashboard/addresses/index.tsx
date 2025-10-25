@@ -2,19 +2,32 @@
 
 import { Back, SearchCm } from "@/common";
 import { WalletCard } from "../wallet-card";
-import { NavigationBar } from "@/common/navigation-bar";
 import { addressModels } from "@/models/address";
+import { Button } from "@heroui/react";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
 export const DashboardAddresses: React.FC = () => {
   const { data } = addressModels.list.useQuery();
-
-  console.log({ data });
 
   return (
     <div>
       <Back title="Addresses" />
 
-      <SearchCm />
+      <SearchCm
+        endContent={
+          <Link href="/dashboard/add-address">
+            <Button
+              isIconOnly
+              radius="full"
+              variant="light"
+              className="bg-primary-100/85 border border-primary-400"
+            >
+              <Plus size={20} className="text-default-900" />
+            </Button>
+          </Link>
+        }
+      />
 
       <div className="flex flex-col gap-y-3 mt-6">
         <WalletCard
@@ -42,7 +55,13 @@ export const DashboardAddresses: React.FC = () => {
         />
       </div>
 
-      <NavigationBar />
+      <div className="w-full mt-5">
+        <Link href="/dashboard">
+          <Button color="primary" radius="full" fullWidth size="lg">
+            Confirm & Start Copy
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 };
