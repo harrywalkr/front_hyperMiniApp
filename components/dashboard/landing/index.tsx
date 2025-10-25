@@ -1,12 +1,16 @@
 "use client";
 
+import { useHelperProvider } from "@/app/helperProvider";
 import { Back } from "@/common";
 import { NavigationBar } from "@/common/navigation-bar";
 import { TableLoading } from "@/core/components";
 import { thousandSeperator } from "@/core/utils";
 import { positionsModels } from "@/models/positions";
+import { tradeModels } from "@/models/trade";
+import { userModels } from "@/models/user";
 import {
   Button,
+  Divider,
   Switch,
   Table,
   TableBody,
@@ -17,9 +21,17 @@ import {
 } from "@heroui/react";
 import { Settings, TrendingUp, Users, X } from "lucide-react";
 import Link from "next/link";
-import { Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-const data = [
+const chartData = [
   {
     name: "A",
     uv: 4000,
@@ -49,6 +61,10 @@ const data = [
 export const DashboardLanding: React.FC = () => {
   const { data, isFetching } = positionsModels.getOpenPositions.useQuery();
 
+  const { aboutMe } = useHelperProvider();
+
+  const { data: tradeBalance } = tradeModels.tradeBalance.useQuery();
+
   return (
     <div className="flex flex-col gap-y-6">
       <Back
@@ -67,16 +83,14 @@ export const DashboardLanding: React.FC = () => {
           <p className="font-medium text-foreground/85 mb-1">Balance</p>
 
           <p className="text-lg text-center font-medium">
-            ${thousandSeperator(145000)}
+            ${thousandSeperator(Number(tradeBalance?.available).toFixed(2))}
           </p>
         </div>
 
         <div className="bg-default-50 rounded-lg p-4">
           <p className="font-medium text-foreground/85 mb-1">Profit</p>
 
-          <p className="text-lg text-center font-medium text-primary">
-            +{thousandSeperator(145000, "%")}
-          </p>
+          <p className="text-lg text-center font-medium">-</p>
         </div>
       </div>
 
@@ -89,7 +103,7 @@ export const DashboardLanding: React.FC = () => {
             aspectRatio: 1.618,
           }}
           responsive
-          data={data}
+          data={chartData}
           margin={{
             top: 5,
             right: 0,
@@ -97,11 +111,10 @@ export const DashboardLanding: React.FC = () => {
             bottom: 5,
           }}
         >
-          {/* <CartesianGrid strokeDasharray="3 3" /> */}
           <XAxis dataKey="name" />
           <YAxis width="auto" />
           <Tooltip />
-          {/* <Legend /> */}
+
           <Line
             type="monotone"
             dataKey="pv"
@@ -111,7 +124,7 @@ export const DashboardLanding: React.FC = () => {
         </LineChart>
       </div>
 
-      <div className="flex flex-col gap-y-4">
+      {/* <div className="flex flex-col gap-y-4">
         <Switch
           size="sm"
           className="justify-between! w-full flex-row-reverse flex max-w-auto grow"
@@ -132,6 +145,56 @@ export const DashboardLanding: React.FC = () => {
         >
           Success Rate
         </Switch>
+      </div> */}
+
+      <div className="w-full flex flex-col gap-y-1 bg-primary/15 p-4 rounded-lg">
+        <div className="flex items-center gap-x-1">
+          <span className="font-semibold text-foreground/95">
+            Address Tracking:
+          </span>
+          <span>{aboutMe?.addresses?.length ?? "-"}</span>
+        </div>
+
+        <div className="flex items-center gap-x-1">
+          <span className="font-semibold text-foreground/95">Threshold:</span>
+          <span>
+            {aboutMe?.prefs?.threshold
+              ? `$${thousandSeperator(aboutMe?.prefs?.threshold)}`
+              : "-"}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-x-1">
+          <span className="font-semibold text-foreground/95">Opens Today:</span>
+          <span>
+            {aboutMe?.eligibility?.copy?.open_positions ?? "-"} / Remaining:{" "}
+            {aboutMe?.copy?.settings?.max_daily_positions ?? "-"}
+          </span>
+        </div>
+
+        <Divider className="my-3 w-full bg-default-500 h-px" />
+
+        <div className="flex items-center gap-x-1">
+          <span className="font-semibold text-foreground/95">Bot:</span>
+          <span>0 / Not-Bot: 2</span>
+        </div>
+
+        <div className="flex items-center gap-x-1">
+          <span className="font-semibold text-foreground/95">Bot Alerts:</span>
+          <span>{aboutMe?.prefs?.alerts ? "ON" : "OFF"}</span>
+        </div>
+
+        <div className="flex items-center gap-x-1">
+          <span className="font-semibold text-foreground/95">Exchange:</span>
+          <span>{aboutMe?.copy?.exchange ?? "-"}</span>
+        </div>
+
+        <div className="flex items-center gap-x-1">
+          <span className="font-semibold text-foreground/95">
+            Token Filter:
+          </span>
+          <span>{aboutMe?.prefs?.filter ?? "-"}</span>
+        </div>
       </div>
 
       <div className="w-full max-w-full">

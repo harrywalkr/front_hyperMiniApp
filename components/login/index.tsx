@@ -13,15 +13,17 @@ export const Login: React.FC = () => {
           You need to subscribe:
         </p>
 
-        <Button
-          fullWidth
-          color="primary"
-          startContent={<Send size={20} />}
-          size="lg"
-          radius="full"
-        >
-          Join @bitfaprobot for free
-        </Button>
+        <a href="https://t.me/bitfaprobot" target="_blank">
+          <Button
+            fullWidth
+            color="primary"
+            startContent={<Send size={20} />}
+            size="lg"
+            radius="full"
+          >
+            Join @bitfaprobot for free
+          </Button>
+        </a>
 
         <Link href="/pay">
           <Button
