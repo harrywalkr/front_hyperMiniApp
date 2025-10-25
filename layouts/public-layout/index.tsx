@@ -13,9 +13,7 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
 
   useEffect(() => {
     if (!isCheckingEligibility) {
-      if (isEligible) {
-        router.push("/dashboard");
-      } else {
+      if (!isEligible) {
         router.push("/login");
       }
     }
@@ -29,9 +27,7 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
           strokeWidth={2.5}
           className="animate-spin text-primary"
         />
-        <p className="text-lg font-medium text-primary">
-          Initializing Application...
-        </p>
+        <p className="text-lg font-medium text-primary">Loaidng...</p>
       </div>
     );
   }

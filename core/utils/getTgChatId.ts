@@ -73,9 +73,7 @@ export async function getTgChatId() {
   const hashUnsafe = parseInitDataUnsafe(hashInitData);
 
   if (!tg && !hashInitData) {
-    return {
-      id: "561361266",
-    };
+    return;
   }
 
   try {
@@ -123,8 +121,6 @@ export async function getTgChatId() {
       };
     }
   } catch (e: any) {
-    return {
-      id: "561361266",
-    };
+    return;
   }
 }

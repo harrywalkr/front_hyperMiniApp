@@ -20,8 +20,8 @@ instance.interceptors.request.use(
       const tg = await getTgChatId();
 
       if (tg?.id) {
-        request.headers["X-TG-Init-Data"] = String(tg?.id ?? "561361266");
-        request.headers["X-Dev-Chat-Id"] = String(tg?.id ?? "561361266");
+        request.headers["X-TG-Init-Data"] = String(tg?.id);
+        request.headers["X-Dev-Chat-Id"] = String(tg?.id);
       }
     }
 
