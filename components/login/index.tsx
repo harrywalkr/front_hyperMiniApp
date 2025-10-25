@@ -8,7 +8,7 @@ export const Login: React.FC = () => {
     <div className="flex flex-col gap-4 items-center justify-between h-fulls grow">
       <div></div>
 
-      <div className="w-full flex flex-col gap-4 mb-10">
+      <div className="w-full flex flex-col gap-4 mb-28">
         <p className="text-center font-medium text-base">
           You need to subscribe:
         </p>

@@ -20,7 +20,9 @@ const HelperContext = createContext<HelperContextType>({
 export const HelperProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const aboutMe = userModels.aboutMe.useQuery();
+  const aboutMe = userModels.aboutMe.useQuery({
+    staleTime: 1000 * 60 * 5,
+  });
 
   return (
     <HelperContext.Provider
