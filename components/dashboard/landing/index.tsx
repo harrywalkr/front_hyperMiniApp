@@ -1,5 +1,6 @@
 "use client";
 
+import { Back } from "@/common";
 import { NavigationBar } from "@/common/navigation-bar";
 import { TableLoading } from "@/core/components";
 import { thousandSeperator } from "@/core/utils";
@@ -50,12 +51,16 @@ export const DashboardLanding: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-y-6">
-      <div className="flex items-center justify-between mb-3">
-        <p>Dashboard</p>
-        <Button variant="light" isIconOnly radius="full">
-          <Settings size={22} strokeWidth={1.6} />
-        </Button>
-      </div>
+      <Back
+        title="Dashboard"
+        endContent={
+          <Link href="/dashboard/settings">
+            <Button variant="light" isIconOnly radius="full">
+              <Settings size={22} strokeWidth={1.6} />
+            </Button>
+          </Link>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-default-50 rounded-lg p-4">
@@ -192,10 +197,19 @@ export const DashboardLanding: React.FC = () => {
                 })}
           </TableBody>
         </Table>
+
+        <div className="flex justify-end">
+          <Link
+            className="font-medium text-primary"
+            href="/dashboard/following-addresses"
+          >
+            See All
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 w-full">
-        <Link href="/dashboard/following-addresses">
+        <Link href="/dashboard/following-address">
           <Button
             fullWidth
             variant="ghost"

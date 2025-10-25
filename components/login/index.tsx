@@ -1,5 +1,4 @@
 "use client";
-import { Logo } from "@/common";
 import { Button } from "@heroui/react";
 import { CreditCard, Send } from "lucide-react";
 import Link from "next/link";
@@ -8,10 +7,6 @@ export const Login: React.FC = () => {
   return (
     <div className="flex flex-col gap-4 items-center justify-between h-fulls grow">
       <div></div>
-
-      <div>
-        <Logo direction="vertical" />
-      </div>
 
       <div className="w-full flex flex-col gap-4 mb-10">
         <p className="text-center font-medium text-base">

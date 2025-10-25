@@ -2,7 +2,7 @@
 
 import { Back } from "@/common";
 import { ControlledNumberInput, Form } from "@/core/components/form";
-import { Button } from "@heroui/react";
+import { Button, Skeleton } from "@heroui/react";
 import { Plus, Settings } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { CopyTradeFormType } from "./types";
@@ -10,12 +10,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { copyTradeFormSchema } from "./schema";
 import { NavigationBar } from "@/common/navigation-bar";
 import { copyTradingModels } from "@/models/copy-trading";
-import { useCallback } from "react";
+import { useCallback, useEffect, useEffectEvent } from "react";
 import { SuccessModal } from "@/core/components";
 import { useToggle } from "usehooks-ts";
+import { useHelperProvider } from "@/app/helperProvider";
+import { useInvalidateQuery } from "@/core/hooks";
+import { userModels } from "@/models/user";
+import Link from "next/link";
 
 export const CopyTradeSettings: React.FC = () => {
   const [success, toggleSuccess] = useToggle(false);
+
+  const { aboutMe, isAboutMeLoading } = useHelperProvider();
 
   const form = useForm<CopyTradeFormType>({
     resolver: zodResolver(copyTradeFormSchema),
@@ -28,10 +34,44 @@ export const CopyTradeSettings: React.FC = () => {
     },
   });
 
+  const initFormDefaultValues = useEffectEvent(() => {
+    if (aboutMe?.copy?.settings) {
+      const {
+        fixed_amount,
+        max_daily_positions,
+        max_drawdown_pct,
+
+        stop_loss_pct,
+        take_profit_pct,
+      } = aboutMe?.copy?.settings;
+
+      form.reset({
+        fixedSize: Number(fixed_amount),
+        maxDailyOpens: Number(max_daily_positions),
+        maxDrawdown: Number(max_drawdown_pct),
+        stopLoss: Number(stop_loss_pct),
+        takeProfit: Number(take_profit_pct),
+      });
+    }
+  });
+
+  useEffect(() => {
+    initFormDefaultValues();
+  }, [aboutMe]);
+
+  const { invalidateQuery: refreshAboutMe } = useInvalidateQuery(
+    userModels.aboutMe.getKey()
+  );
+
   const { mutate: setSettings, isPending } =
     copyTradingModels.setSettings.useMutation({
-      onSuccess: () => {
-        toggleSuccess();
+      onSuccess: async () => {
+        try {
+          await refreshAboutMe();
+        } catch (error) {
+        } finally {
+          toggleSuccess();
+        }
       },
     });
 
@@ -56,9 +96,11 @@ export const CopyTradeSettings: React.FC = () => {
       <Back
         title="Copy Trade Settings"
         endContent={
-          <Button variant="light" isIconOnly radius="full">
-            <Settings size={22} strokeWidth={1.6} />
-          </Button>
+          <Link href="/dashboard/copy-trade-settings">
+            <Button variant="light" isIconOnly radius="full">
+              <Settings size={22} strokeWidth={1.6} />
+            </Button>
+          </Link>
         }
       />
 
@@ -76,81 +118,144 @@ export const CopyTradeSettings: React.FC = () => {
 
         <div className="w-full">
           <Form {...form} onSubmit={form.handleSubmit(handleSubmit)}>
-            <div className="w-full flex flex-col gap-y-5">
-              <ControlledNumberInput
-                name="fixedSize"
-                label="Fixed Size"
-                radius="full"
-                size="lg"
-                startContent={undefined}
-                labelPlacement="outside-top"
-                endContent={undefined}
-                description="Margin used for 20X leverage ≈ $0.40 (=$8 ÷ 20)"
-              />
+            {isAboutMeLoading ? (
+              <div className="w-full flex flex-col gap-y-5">
+                <div>
+                  <Skeleton
+                    className="w-48 h-4 rounded-md mb-2 ml-1.5"
+                    isLoaded={false}
+                  />
+                  <Skeleton
+                    className="w-full h-11 rounded-full"
+                    isLoaded={false}
+                  />
+                </div>
 
-              <ControlledNumberInput
-                name="maxDailyOpens"
-                label="Max Daily Opens"
-                radius="full"
-                size="lg"
-                startContent={undefined}
-                labelPlacement="outside-top"
-                endContent={undefined}
-              />
+                <div>
+                  <Skeleton
+                    className="w-48 h-4 rounded-md mb-2 ml-1.5"
+                    isLoaded={false}
+                  />
+                  <Skeleton
+                    className="w-full h-11 rounded-full"
+                    isLoaded={false}
+                  />
+                </div>
 
-              <ControlledNumberInput
-                name="takeProfit"
-                label="Take Profit"
-                radius="full"
-                size="lg"
-                startContent={undefined}
-                labelPlacement="outside-top"
-                endContent={undefined}
-              />
+                <div>
+                  <Skeleton
+                    className="w-48 h-4 rounded-md mb-2 ml-1.5"
+                    isLoaded={false}
+                  />
+                  <Skeleton
+                    className="w-full h-11 rounded-full"
+                    isLoaded={false}
+                  />
+                </div>
 
-              <ControlledNumberInput
-                name="stopLoss"
-                label="Stop Loss"
-                radius="full"
-                size="lg"
-                startContent={undefined}
-                labelPlacement="outside-top"
-                endContent={undefined}
-              />
+                <div>
+                  <Skeleton
+                    className="w-48 h-4 rounded-md mb-2 ml-1.5"
+                    isLoaded={false}
+                  />
+                  <Skeleton
+                    className="w-full h-11 rounded-full"
+                    isLoaded={false}
+                  />
+                </div>
 
-              <ControlledNumberInput
-                name="maxDrawdown"
-                label="Max Drawdown"
-                radius="full"
-                size="lg"
-                startContent={undefined}
-                labelPlacement="outside-top"
-                endContent={undefined}
-              />
+                <div>
+                  <Skeleton
+                    className="w-48 h-4 rounded-md mb-2 ml-1.5"
+                    isLoaded={false}
+                  />
+                  <Skeleton
+                    className="w-full h-11 rounded-full"
+                    isLoaded={false}
+                  />
+                </div>
+                <Skeleton
+                  className="w-full h-11 rounded-full"
+                  isLoaded={false}
+                />
+              </div>
+            ) : (
+              <div className="w-full flex flex-col gap-y-5">
+                <ControlledNumberInput
+                  name="fixedSize"
+                  label="Fixed Size"
+                  radius="full"
+                  size="lg"
+                  startContent={undefined}
+                  labelPlacement="outside-top"
+                  endContent={undefined}
+                  description="Margin used for 20X leverage ≈ $0.40 (=$8 ÷ 20)"
+                />
 
-              <Button
-                radius="full"
-                fullWidth
-                type="submit"
-                color="primary"
-                size="lg"
-                isLoading={isPending}
-              >
-                Confirm & Start Copy
-              </Button>
-            </div>
+                <ControlledNumberInput
+                  name="maxDailyOpens"
+                  label="Max Daily Opens"
+                  radius="full"
+                  size="lg"
+                  startContent={undefined}
+                  labelPlacement="outside-top"
+                  endContent={undefined}
+                />
+
+                <ControlledNumberInput
+                  name="takeProfit"
+                  label="Take Profit"
+                  radius="full"
+                  size="lg"
+                  startContent={undefined}
+                  labelPlacement="outside-top"
+                  endContent={undefined}
+                />
+
+                <ControlledNumberInput
+                  name="stopLoss"
+                  label="Stop Loss"
+                  radius="full"
+                  size="lg"
+                  startContent={undefined}
+                  labelPlacement="outside-top"
+                  endContent={undefined}
+                />
+
+                <ControlledNumberInput
+                  name="maxDrawdown"
+                  label="Max Drawdown"
+                  radius="full"
+                  size="lg"
+                  startContent={undefined}
+                  labelPlacement="outside-top"
+                  endContent={undefined}
+                />
+
+                <Button
+                  radius="full"
+                  fullWidth
+                  type="submit"
+                  color="primary"
+                  size="lg"
+                  isLoading={isPending}
+                >
+                  Confirm & Continue
+                </Button>
+              </div>
+            )}
           </Form>
         </div>
-      </div>
 
-      <NavigationBar />
+        <NavigationBar isStatic />
+      </div>
 
       <SuccessModal
         isOpen={success}
         onCloseAction={toggleSuccess}
         title="Settings Saved"
         text="Your Copy trading settings saved successfuly!"
-        buttonTitle="lets follow wallets"
+        buttonTitle="follow wallets"
         onCloseRedirectUrl="/dashboard/addresses"
       />
     </div>

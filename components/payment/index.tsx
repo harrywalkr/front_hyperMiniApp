@@ -1,18 +1,26 @@
 "use client";
-import { Back, Logo } from "@/common";
+import { Back } from "@/common";
 import { addToast, Alert, Button } from "@heroui/react";
 import { useCallback, useEffect, useEffectEvent, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Copy } from "lucide-react";
-import { useCopyToClipboard } from "usehooks-ts";
+import { useCopyToClipboard, useToggle } from "usehooks-ts";
 import { subscribeModels } from "@/models/subscribe";
 import { useTimer } from "@/core/hooks";
 import { useRouter } from "next/navigation";
+import {
+  subscriptionFailedStatuses,
+  subscriptionSuccessStatuses,
+} from "@/models/subscribe/getSubscriptionStatus/types";
+import { ErrorModal, SuccessModal } from "@/core/components";
 
 export const Payment: React.FC = () => {
   const router = useRouter();
 
   const [selectedProtocol, setSelectedProtocol] = useState<string>("usdtbsc");
+
+  const [isSuccess, toggleSuccess] = useToggle(false);
+  const [isError, toggleError] = useToggle(false);
 
   const { remainingTime, restart } = useTimer({
     initialSeconds: 10 * 60,
@@ -82,16 +90,20 @@ export const Payment: React.FC = () => {
   }, [selectedProtocol]);
 
   useEffect(() => {
-    if (subscriptionStatus?.status === "confirmed") {
-      addToast({ title: "Payment Succesful" });
-      router.push("/transactions");
+    if (subscriptionStatus?.status) {
+      if (subscriptionSuccessStatuses.includes(subscriptionStatus?.status)) {
+        toggleSuccess();
+      } else if (
+        subscriptionFailedStatuses.includes(subscriptionStatus?.status)
+      ) {
+        toggleError();
+      }
     }
   }, [subscriptionStatus]);
 
   return (
     <div>
       <Back title="Payment" />
-      <Logo direction="horizontal" showDescription />
 
       <div className="flex flex-col gap-8 mt-8">
         <div className="flex flex-col gap-y-3">
@@ -216,6 +228,26 @@ export const Payment: React.FC = () => {
           </span>
         </Alert>
       </div>
+
+      <SuccessModal
+        isOpen={isSuccess}
+        onCloseAction={toggleSuccess}
+        title="Payment Succesful"
+        text="Your subscription has been activated"
+        onCloseRedirectUrl="/dashboard"
+        buttonTitle="Got it, continue"
+      />
+
+      <ErrorModal
+        isOpen={isError}
+        onCloseAction={() => {
+          toggleError();
+          window.location.reload();
+        }}
+        title="Payment Failed"
+        text="Your subscription has not been activated"
+        buttonTitle="Try again"
+      />
     </div>
   );
 };
