@@ -1,35 +1,29 @@
 "use client";
-import { PublicLayoutProps } from "./types";
+import { PrivateLayoutProps } from "./types";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader } from "lucide-react";
 import { Logo } from "@/common";
 import { useHelperProvider } from "@/app/helperProvider";
+import { Loading } from "../loading";
 
-export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
+export const PrivateLayout: React.FC<PrivateLayoutProps> = ({ children }) => {
   const router = useRouter();
 
-  const { isEligible, isCheckingEligibility } = useHelperProvider();
+  const { isEligible, isCheckingEligibility, stepStatus } = useHelperProvider();
 
   useEffect(() => {
-    if (!isCheckingEligibility) {
-      if (!isEligible) {
-        router.push("/login");
+    if (!isCheckingEligibility && stepStatus) {
+      if (stepStatus === "premium") {
+        return;
       }
-    }
-  }, [isEligible, isCheckingEligibility]);
 
-  if (isCheckingEligibility || !isEligible) {
-    return (
-      <div className="flex flex-col gap-y-2 items-center justify-center overscroll-none overflow-y-auto min-h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat p-5 max-w-md mx-auto">
-        <Loader
-          size={40}
-          strokeWidth={2.5}
-          className="animate-spin text-primary"
-        />
-        <p className="text-lg font-medium text-primary">Loaidng...</p>
-      </div>
-    );
+      router.push(stepStatus === "new" ? "/login" : "/copy-trade-settings");
+    }
+  }, [stepStatus, isCheckingEligibility]);
+
+  console.log({ isCheckingEligibility, stepStatus });
+  if (isCheckingEligibility || !stepStatus) {
+    return <Loading />;
   }
 
   return (

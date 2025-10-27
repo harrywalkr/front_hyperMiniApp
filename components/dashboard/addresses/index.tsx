@@ -16,7 +16,7 @@ export const DashboardAddresses: React.FC = () => {
 
       <SearchCm
         endContent={
-          <Link href="/dashboard/add-address">
+          <Link href="/add-address">
             <Button
               isIconOnly
               radius="full"

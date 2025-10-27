@@ -35,5 +35,10 @@ export type AboutMeResponse = {
       take_profit_pct: string;
       stop_loss_pct: string;
     };
+    daily: {
+      opens_today: number;
+      max_daily: number;
+      remaining: number;
+    };
   };
 };

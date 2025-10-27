@@ -1,9 +1,9 @@
-import { PublicLayout } from "@/layouts";
+import { PrivateLayout } from "@/layouts";
 
 export default async function PublicLayoutLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <PublicLayout>{children}</PublicLayout>;
+  return <PrivateLayout>{children}</PrivateLayout>;
 }

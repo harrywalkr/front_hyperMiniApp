@@ -7,10 +7,10 @@ import { TableLoading } from "@/core/components";
 import { thousandSeperator } from "@/core/utils";
 import { positionsModels } from "@/models/positions";
 import { tradeModels } from "@/models/trade";
-import { userModels } from "@/models/user";
 import {
   Button,
   Divider,
+  Skeleton,
   Switch,
   Table,
   TableBody,
@@ -21,49 +21,29 @@ import {
 } from "@heroui/react";
 import { Settings, TrendingUp, Users, X } from "lucide-react";
 import Link from "next/link";
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-
-const chartData = [
-  {
-    name: "A",
-    uv: 4000,
-    pv: 2400,
-    amt: 2400,
-  },
-  {
-    name: "B",
-    uv: 3000,
-    pv: 1398,
-    amt: 2210,
-  },
-  {
-    name: "C",
-    uv: 2000,
-    pv: 9800,
-    amt: 2290,
-  },
-  {
-    name: "D",
-    uv: 2780,
-    pv: 3908,
-    amt: 2000,
-  },
-];
+import { DashboardBarChart } from "./bar-chart";
+import clsx from "clsx";
+import { DashboardAreaChart } from "./area-chart";
+import { useState } from "react";
 
 export const DashboardLanding: React.FC = () => {
-  const { data, isFetching } = positionsModels.getOpenPositions.useQuery();
+  const { data, isLoading } = positionsModels.getOpenPositions.useQuery({
+    refetchInterval: 15000,
+  });
 
   const { aboutMe } = useHelperProvider();
 
-  const { data: tradeBalance } = tradeModels.tradeBalance.useQuery();
+  const { data: tradeBalance, isFetched: isTradeBalanceFetched } =
+    tradeModels.tradeBalance.useQuery();
+
+  const profit = Number(tradeBalance?.crossUnrealizedPNL || "0");
+  const isPositive = profit >= 0;
+
+  const { mutate: closeTrade } = tradeModels.closeTrade.useMutation();
+
+  const [activeChart, setActiveChart] = useState<"balance" | "profit">(
+    "balance"
+  );
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -79,49 +59,63 @@ export const DashboardLanding: React.FC = () => {
       />
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-default-50 rounded-lg p-4">
-          <p className="font-medium text-foreground/85 mb-1">Balance</p>
+        <Skeleton isLoaded={isTradeBalanceFetched} className="rounded-lg">
+          <div className="bg-default-50 rounded-lg p-4">
+            <p className="font-medium text-foreground/85 mb-1">Balance</p>
 
-          <p className="text-lg text-center font-medium">
-            ${thousandSeperator(Number(tradeBalance?.available).toFixed(2))}
+            <p className="text-lg text-center font-medium">
+              ${thousandSeperator(Number(tradeBalance?.available).toFixed(2))}
+            </p>
+          </div>
+        </Skeleton>
+
+        <Skeleton isLoaded={isTradeBalanceFetched} className="rounded-lg">
+          <div className="bg-default-50 rounded-lg p-4">
+            <p className="font-medium text-foreground/85 mb-1">Profit</p>
+
+            <p
+              className={clsx(
+                "text-lg text-center font-medium",
+                isPositive ? "text-primary" : "text-danger"
+              )}
+            >
+              ${thousandSeperator(Number(profit).toFixed(2))}
+            </p>
+          </div>
+        </Skeleton>
+      </div>
+
+      <div className="w-full max-w-full bg-default-50 rounded-lg p-3">
+        <div className="mb-6 border-b border-b-default-300  flex items-center justify-between w-full">
+          <p
+            onClick={() => setActiveChart("balance")}
+            className={clsx(
+              "text-foreground/90 border-b-2 pb-2",
+              activeChart === "balance"
+                ? "border-b-primary font-semibold"
+                : " border-b-transparent "
+            )}
+          >
+            Balance Chart
+          </p>
+          <p
+            onClick={() => setActiveChart("profit")}
+            className={clsx(
+              "text-foreground/90 border-b-2 pb-2",
+              activeChart === "profit"
+                ? "border-b-primary font-semibold"
+                : " border-b-transparent "
+            )}
+          >
+            Profit Chart
           </p>
         </div>
 
-        <div className="bg-default-50 rounded-lg p-4">
-          <p className="font-medium text-foreground/85 mb-1">Profit</p>
-
-          <p className="text-lg text-center font-medium">-</p>
-        </div>
-      </div>
-
-      <div className="w-full max-w-full h-60">
-        <LineChart
-          style={{
-            width: "100%",
-            maxWidth: "700px",
-            maxHeight: "240px",
-            aspectRatio: 1.618,
-          }}
-          responsive
-          data={chartData}
-          margin={{
-            top: 5,
-            right: 0,
-            left: 0,
-            bottom: 5,
-          }}
-        >
-          <XAxis dataKey="name" />
-          <YAxis width="auto" />
-          <Tooltip />
-
-          <Line
-            type="monotone"
-            dataKey="pv"
-            stroke="#4b9989"
-            activeDot={{ r: 8 }}
-          />
-        </LineChart>
+        {activeChart === "balance" ? (
+          <DashboardBarChart />
+        ) : (
+          <DashboardAreaChart />
+        )}
       </div>
 
       {/* <div className="flex flex-col gap-y-4">
@@ -167,8 +161,8 @@ export const DashboardLanding: React.FC = () => {
         <div className="flex items-center gap-x-1">
           <span className="font-semibold text-foreground/95">Opens Today:</span>
           <span>
-            {aboutMe?.eligibility?.copy?.open_positions ?? "-"} / Remaining:{" "}
-            {aboutMe?.copy?.settings?.max_daily_positions ?? "-"}
+            {aboutMe?.copy?.daily?.opens_today ?? "-"} / Remaining:{" "}
+            {aboutMe?.copy?.daily?.remaining ?? "-"}
           </span>
         </div>
 
@@ -217,7 +211,7 @@ export const DashboardLanding: React.FC = () => {
           </TableHeader>
 
           <TableBody
-            isLoading={isFetching}
+            isLoading={isLoading}
             emptyContent={"No Open positions yet!"}
             loadingContent={<TableLoading />}
           >
@@ -246,6 +240,7 @@ export const DashboardLanding: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Button
+                          onPress={() => closeTrade({ symbol: item?.symbol })}
                           variant="light"
                           size="sm"
                           isIconOnly
@@ -284,7 +279,7 @@ export const DashboardLanding: React.FC = () => {
           </Button>
         </Link>
 
-        <Link href="/dashboard/addresses">
+        <Link href="/addresses">
           <Button
             fullWidth
             variant="ghost"
