@@ -25,6 +25,7 @@ import { DashboardBarChart } from "./bar-chart";
 import clsx from "clsx";
 import { DashboardAreaChart } from "./area-chart";
 import { useState } from "react";
+import { useInvalidateQuery } from "@/core/hooks";
 
 export const DashboardLanding: React.FC = () => {
   const { data, isLoading } = positionsModels.getOpenPositions.useQuery({
@@ -39,7 +40,17 @@ export const DashboardLanding: React.FC = () => {
   const profit = Number(tradeBalance?.crossUnrealizedPNL || "0");
   const isPositive = profit >= 0;
 
-  const { mutate: closeTrade } = tradeModels.closeTrade.useMutation();
+  const { invalidateQuery: refreshOpenPositions } = useInvalidateQuery(
+    positionsModels.getOpenPositions.getKey()
+  );
+
+  const { mutate: closeTrade } = tradeModels.closeTrade.useMutation({
+    onSuccess: async () => {
+      try {
+        await refreshOpenPositions();
+      } catch (error) {}
+    },
+  });
 
   const [activeChart, setActiveChart] = useState<"balance" | "profit">(
     "balance"
