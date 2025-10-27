@@ -24,7 +24,7 @@ export const AddAddress: React.FC = () => {
     onSuccess: () => {
       addToast({ title: "Address Saved", color: "success" });
       form.reset();
-      router.push("/dashboard/addresses");
+      router.push("/addresses");
     },
     onError: (error: any) => {
       addToast({

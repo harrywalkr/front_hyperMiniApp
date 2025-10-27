@@ -19,6 +19,10 @@ instance.interceptors.request.use(
     if (!isServer) {
       const tg = await getTgChatId();
 
+      // const tg = {
+      //   id: "561361266",
+      // };
+
       if (tg?.id) {
         request.headers["X-TG-Init-Data"] = String(tg?.id);
         request.headers["X-Dev-Chat-Id"] = String(tg?.id);

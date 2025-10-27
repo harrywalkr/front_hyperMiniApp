@@ -22,13 +22,13 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ isStatic }) => {
           isStatic ? "static" : "fixed z-50 left-1/2 -translate-x-1/2 bottom-5"
         )}
       >
-        <Link href="/dashboard/copy-trade-settings">
+        <Link href="/copy-trade-settings">
           <Button isIconOnly size="lg" variant="light" radius="full">
             <Settings
               size={25}
               strokeWidth={1.6}
               className={
-                pathname === "/dashboard/copy-trade-settings"
+                pathname === "/copy-trade-settings"
                   ? "text-white"
                   : "text-white/70"
               }

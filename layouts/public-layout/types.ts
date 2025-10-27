@@ -1,3 +1,3 @@
 import { PropsWithChildren } from "react";
 
-export type PublicLayoutProps = PropsWithChildren<unknown>;
+export type PrivateLayoutProps = PropsWithChildren<unknown>;

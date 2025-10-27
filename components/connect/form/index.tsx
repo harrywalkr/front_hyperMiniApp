@@ -134,7 +134,7 @@ export const ConnectForm: React.FC = () => {
         onCloseAction={toggleSuccess}
         title="Copy Trading was enabled!"
         text="your copy trading account is now ready to use"
-        onCloseRedirectUrl="/dashboard/copy-trade-settings"
+        onCloseRedirectUrl="/copy-trade-settings"
         buttonTitle="Got it, let's go!"
       />
     </Form>

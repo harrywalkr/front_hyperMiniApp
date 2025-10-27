@@ -63,6 +63,8 @@ export const CopyTradeSettings: React.FC = () => {
     userModels.aboutMe.getKey()
   );
 
+  const { setOnboardingState } = useHelperProvider();
+
   const { mutate: setSettings, isPending } =
     copyTradingModels.setSettings.useMutation({
       onSuccess: async () => {
@@ -70,6 +72,7 @@ export const CopyTradeSettings: React.FC = () => {
           await refreshAboutMe();
         } catch (error) {
         } finally {
+          setOnboardingState("done");
           toggleSuccess();
         }
       },
@@ -96,7 +99,7 @@ export const CopyTradeSettings: React.FC = () => {
       <Back
         title="Copy Trade Settings"
         endContent={
-          <Link href="/dashboard/copy-trade-settings">
+          <Link href="/copy-trade-settings">
             <Button variant="light" isIconOnly radius="full">
               <Settings size={22} strokeWidth={1.6} />
             </Button>
@@ -246,8 +249,6 @@ export const CopyTradeSettings: React.FC = () => {
             )}
           </Form>
         </div>
-
-        <NavigationBar isStatic />
       </div>
 
       <SuccessModal
@@ -256,7 +257,7 @@ export const CopyTradeSettings: React.FC = () => {
         title="Settings Saved"
         text="Your Copy trading settings saved successfuly!"
         buttonTitle="follow wallets"
-        onCloseRedirectUrl="/dashboard/addresses"
+        onCloseRedirectUrl="/dashboard"
       />
     </div>
   );
