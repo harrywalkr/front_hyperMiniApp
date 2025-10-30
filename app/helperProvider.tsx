@@ -45,34 +45,48 @@ export const HelperProvider: React.FC<{
     "show" | "done" | undefined
   >("onboarding", undefined);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
-    if (aboutMe?.data) {
-      const isEligible =
-        aboutMe?.data?.eligibility?.member ||
-        aboutMe?.data?.eligibility?.subscribed;
+    const data = aboutMe?.data;
+    if (!data) return;
 
-      if (
-        isEligible &&
-        aboutMe?.data?.eligibility?.copy?.enabled &&
-        aboutMe?.data?.eligibility?.copy?.open_positions > 0
-      ) {
-        setStepStatus("premium");
-      } else if (
-        isEligible &&
-        aboutMe?.data?.eligibility?.copy?.enabled &&
-        aboutMe?.data?.eligibility?.copy?.open_positions < 0
-      ) {
-        setStepStatus(onboardingState === "show" ? "onboarding" : "premium");
-      } else {
-        setStepStatus("new");
-      }
+    const member = !!data.eligibility?.member;
+    const subscribed = !!data.eligibility?.subscribed;
+    const copyEnabled = !!data.eligibility?.copy?.enabled;
+    const openPositions = data.eligibility?.copy?.open_positions ?? 0;
 
+    if (!(member || subscribed)) {
+      setStepStatus("new");
       setIsLoading(false);
+      return;
     }
+
+    if (!copyEnabled) {
+      setStepStatus("onboarding");
+      setIsLoading(false);
+      return;
+    }
+
+    if (openPositions === 0) {
+      setStepStatus("onboarding");
+      setIsLoading(false);
+      return;
+    }
+
+    if (openPositions > 0) {
+      setStepStatus("premium");
+      setIsLoading(false);
+      return;
+    }
+
+    // fallback
+    console.log("fallback");
+    setStepStatus("new");
+    setIsLoading(false);
   }, [aboutMe?.data, onboardingState]);
+  console.log({ stepStatus });
 
   return (
     <HelperContext.Provider
