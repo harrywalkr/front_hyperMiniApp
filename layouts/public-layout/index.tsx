@@ -21,7 +21,6 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({ children }) => {
     }
   }, [stepStatus, isCheckingEligibility]);
 
-  console.log({ isCheckingEligibility, stepStatus });
   if (isCheckingEligibility || !stepStatus) {
     return <Loading />;
   }

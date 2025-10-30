@@ -81,7 +81,7 @@ export const HelperProvider: React.FC<{
           aboutMe?.data?.eligibility?.member ||
             aboutMe?.data?.eligibility?.subscribed
         ),
-        isCheckingEligibility: aboutMe.isFetching || isLoading,
+        isCheckingEligibility: aboutMe.isFetching,
         isAboutMeLoading: aboutMe.isFetching,
         aboutMe: aboutMe.data,
         stepStatus,
