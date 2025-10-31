@@ -1,104 +1,129 @@
 "use client";
-import { userModels } from "@/models/user";
-import { AboutMeResponse } from "@/models/user/aboutMe/types";
-import {
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import { useLocalStorage } from "usehooks-ts";
 
-type StepStatusType = "onboarding" | "new" | "premium";
-interface HelperContextType {
-  isEligible: boolean;
+import { createContext, useContext, useEffect, useState } from "react";
+import { clientRequest } from "@/core/config";
+
+type HelperContextType = {
+  stepStatus: string | null;
   isCheckingEligibility: boolean;
+  isEligible: boolean;
+  aboutMe: any;
   isAboutMeLoading: boolean;
-  aboutMe: AboutMeResponse | undefined;
-  stepStatus: StepStatusType | undefined;
-  setOnboardingState: Dispatch<SetStateAction<"done" | "show" | undefined>>;
-}
+  setOnboardingState: (state: string | null) => void;
+};
 
 const HelperContext = createContext<HelperContextType>({
+  stepStatus: null,
+  isCheckingEligibility: true,
   isEligible: false,
-  isCheckingEligibility: false,
-  isAboutMeLoading: false,
-  aboutMe: undefined,
-  stepStatus: undefined,
+  aboutMe: null,
+  isAboutMeLoading: true,
   setOnboardingState: () => {},
 });
 
-export const HelperProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-  const aboutMe = userModels.aboutMe.useQuery({
-    staleTime: 1000 * 60 * 5,
-  });
+export const HelperProvider = ({ children }: { children: React.ReactNode }) => {
+  const [stepStatus, setStepStatus] = useState<string | null>(null);
+  const [isCheckingEligibility, setIsChecking] = useState(true);
+  const [isEligible, setEligible] = useState(false);
 
-  const [stepStatus, setStepStatus] = useState<StepStatusType | undefined>(
-    undefined
-  );
+  const [aboutMe, setAboutMe] = useState<any>(null);
+  const [isAboutMeLoading, setIsAboutMeLoading] = useState(true);
 
-  const [onboardingState, setOnboardingState] = useLocalStorage<
-    "show" | "done" | undefined
-  >("onboarding", undefined);
+  // ✅ Helper function to apply eligibility logic
+  const applyEligibility = (e: any) => {
+    setEligible(Boolean(e?.eligible));
 
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const data = aboutMe?.data;
-    if (!data) return;
-
-    const member = !!data.eligibility?.member;
-    const subscribed = !!data.eligibility?.subscribed;
-    const copyEnabled = !!data.eligibility?.copy?.enabled;
-    const openPositions = data.eligibility?.copy?.open_positions ?? 0;
-
-    if (!(member || subscribed)) {
-      setStepStatus("new");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!copyEnabled) {
-      setStepStatus("onboarding");
-      setIsLoading(false);
-      return;
-    }
-
-    if (openPositions === 0) {
-      setStepStatus("onboarding");
-      setIsLoading(false);
-      return;
-    }
-
-    if (openPositions > 0) {
+    if (e?.member) {
+      // Member → allowed to access dashboard
       setStepStatus("premium");
-      setIsLoading(false);
-      return;
+    } else if (!e?.eligible) {
+      setStepStatus("new");
+    } else if (e?.because === "member" || e?.because === "channel") {
+      setStepStatus("onboarding");
+    } else {
+      setStepStatus("premium");
+    }
+  };
+
+  // ✅ Load eligibility (with caching)
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadEligibility() {
+      try {
+        // Try reading from sessionStorage cache first
+        const cached = sessionStorage.getItem("eligibility");
+        if (cached) {
+          const e = JSON.parse(cached);
+          applyEligibility(e);
+          setIsChecking(false);
+          return;
+        }
+
+        // Otherwise fetch fresh
+        const res = await clientRequest.get("/eligibility");
+        const e = res?.data;
+        sessionStorage.setItem("eligibility", JSON.stringify(e));
+        if (cancelled) return;
+        applyEligibility(e);
+      } catch (err) {
+        if (cancelled) return;
+        console.warn("[HelperProvider] eligibility failed", err);
+        setStepStatus("new");
+      } finally {
+        if (!cancelled) setIsChecking(false);
+      }
     }
 
-    // fallback
-    console.log("fallback");
-    setStepStatus("new");
-    setIsLoading(false);
-  }, [aboutMe?.data, onboardingState]);
-  console.log({ stepStatus });
+    loadEligibility();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // ✅ Load /me (aboutMe)
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAboutMe() {
+      try {
+        const res = await clientRequest.get("/me");
+        if (cancelled) return;
+        setAboutMe(res?.data?.user ?? res?.data ?? null);
+      } catch (err) {
+        if (cancelled) return;
+        console.warn("[HelperProvider] /me failed", err);
+      } finally {
+        if (!cancelled) setIsAboutMeLoading(false);
+      }
+    }
+
+    loadAboutMe();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // ✅ Allow manual override (used during onboarding)
+  const setOnboardingState = (state: string | null) => {
+    setStepStatus(state);
+    // Keep consistency in cache
+    const cached = sessionStorage.getItem("eligibility");
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      parsed._manualStep = state;
+      sessionStorage.setItem("eligibility", JSON.stringify(parsed));
+    }
+  };
 
   return (
     <HelperContext.Provider
       value={{
-        isEligible: Boolean(
-          aboutMe?.data?.eligibility?.member ||
-            aboutMe?.data?.eligibility?.subscribed
-        ),
-        isCheckingEligibility: aboutMe.isFetching || isLoading,
-        isAboutMeLoading: aboutMe.isFetching,
-        aboutMe: aboutMe.data,
         stepStatus,
+        isCheckingEligibility,
+        isEligible,
+        aboutMe,
+        isAboutMeLoading,
         setOnboardingState,
       }}
     >
@@ -107,6 +132,4 @@ export const HelperProvider: React.FC<{
   );
 };
 
-export const useHelperProvider = () => {
-  return useContext(HelperContext);
-};
+export const useHelperProvider = () => useContext(HelperContext);

@@ -8,3 +8,9 @@ export const site = {
     domain: "https://mini.bitfx.com",
   },
 };
+
+// Enable logging when ?debug=1 or NEXT_PUBLIC_DEBUG=1
+export const DEBUG =
+  (typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("debug") === "1") ||
+  process.env.NEXT_PUBLIC_DEBUG === "1";
