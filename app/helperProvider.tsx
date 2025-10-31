@@ -1,107 +1,129 @@
 "use client";
-import { userModels } from "@/models/user";
-import { AboutMeResponse } from "@/models/user/aboutMe/types";
-import { usePathname } from "next/navigation";
-import {
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import { useLocalStorage } from "usehooks-ts";
+
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { clientRequest } from "@/core/config";
 
 type StepStatusType = "onboarding" | "new" | "premium";
-interface HelperContextType {
-  isEligible: boolean;
+type HelperContextType = {
+  stepStatus: StepStatusType | null;
   isCheckingEligibility: boolean;
+  isEligible: boolean;
+  aboutMe: any;
   isAboutMeLoading: boolean;
-  aboutMe: AboutMeResponse | undefined;
-  stepStatus: StepStatusType | undefined;
-  setOnboardingState: Dispatch<SetStateAction<"done" | "show" | undefined>>;
-}
+  setOnboardingState: (state: StepStatusType | null) => void;
+};
 
 const HelperContext = createContext<HelperContextType>({
+  stepStatus: null,
+  isCheckingEligibility: true,
   isEligible: false,
-  isCheckingEligibility: false,
-  isAboutMeLoading: false,
-  aboutMe: undefined,
-  stepStatus: undefined,
+  aboutMe: null,
+  isAboutMeLoading: true,
   setOnboardingState: () => {},
 });
 
-export const HelperProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-  const pathname = usePathname();
+export const HelperProvider = ({ children }: { children: React.ReactNode }) => {
+  const [stepStatus, setStepStatus] = useState<StepStatusType | null>(null);
+  const [isCheckingEligibility, setIsChecking] = useState(true);
+  const [isEligible, setEligible] = useState(false);
 
-  const aboutMe = userModels.aboutMe.useQuery({
-    staleTime: 1000 * 60 * 5,
-    enabled: pathname !== "/tg-error",
-  });
+  const [aboutMe, setAboutMe] = useState<any>(null);
+  const [isAboutMeLoading, setIsAboutMeLoading] = useState(true);
 
-  const [stepStatus, setStepStatus] = useState<StepStatusType | undefined>(
-    undefined
-  );
+  // Apply eligibility → stepStatus mapping
+  const applyEligibility = (e: any) => {
+    const eligible = Boolean(e?.eligible);
+    setEligible(eligible);
 
-  const [onboardingState, setOnboardingState] = useLocalStorage<
-    "show" | "done" | undefined
-  >("onboarding", undefined);
-
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const data = aboutMe?.data;
-    if (!data) return;
-
-    const member = !!data.eligibility?.member;
-    const subscribed = !!data.eligibility?.subscribed;
-    const copyEnabled = !!data.eligibility?.copy?.enabled;
-    const openPositions = data.eligibility?.copy?.open_positions ?? 0;
-
-    if (!(member || subscribed)) {
-      setStepStatus("new");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!copyEnabled) {
-      setStepStatus("onboarding");
-      setIsLoading(false);
-      return;
-    }
-
-    if (openPositions === 0) {
-      setStepStatus("onboarding");
-      setIsLoading(false);
-      return;
-    }
-
-    if (openPositions > 0) {
+    if (e?.member) {
       setStepStatus("premium");
-      setIsLoading(false);
-      return;
+    } else if (!eligible) {
+      setStepStatus("new");
+    } else if (e?.because === "member" || e?.because === "channel") {
+      setStepStatus("onboarding");
+    } else {
+      setStepStatus("premium");
+    }
+  };
+
+  // Load eligibility (with sessionStorage cache)
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadEligibility() {
+      try {
+        const cached = typeof window !== "undefined" ? sessionStorage.getItem("eligibility") : null;
+        if (cached) {
+          const e = JSON.parse(cached);
+          applyEligibility(e);
+          setIsChecking(false);
+          return;
+        }
+
+        const res = await clientRequest.get("/eligibility");
+        const e = res?.data;
+        if (!cancelled) {
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("eligibility", JSON.stringify(e));
+          }
+          applyEligibility(e);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.warn("[HelperProvider] eligibility failed", err);
+          setStepStatus("new");
+        }
+      } finally {
+        if (!cancelled) setIsChecking(false);
+      }
     }
 
-    // fallback
-    console.log("fallback");
-    setStepStatus("new");
-    setIsLoading(false);
-  }, [aboutMe?.data, onboardingState]);
+    loadEligibility();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Load /me (aboutMe)
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAboutMe() {
+      try {
+        const res = await clientRequest.get("/me");
+        if (!cancelled) setAboutMe(res?.data?.user ?? res?.data ?? null);
+      } catch (err) {
+        if (!cancelled) console.warn("[HelperProvider] /me failed", err);
+      } finally {
+        if (!cancelled) setIsAboutMeLoading(false);
+      }
+    }
+
+    loadAboutMe();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Allow manual override (used during onboarding)
+  const setOnboardingState = (state: StepStatusType | null) => {
+    setStepStatus(state);
+    const cached = typeof window !== "undefined" ? sessionStorage.getItem("eligibility") : null;
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      parsed._manualStep = state;
+      sessionStorage.setItem("eligibility", JSON.stringify(parsed));
+    }
+  };
 
   return (
     <HelperContext.Provider
       value={{
-        isEligible: Boolean(
-          aboutMe?.data?.eligibility?.member ||
-            aboutMe?.data?.eligibility?.subscribed
-        ),
-        isCheckingEligibility: aboutMe.isLoading || isLoading,
-        isAboutMeLoading: aboutMe.isFetching,
-        aboutMe: aboutMe.data,
         stepStatus,
+        isCheckingEligibility,
+        isEligible,
+        aboutMe,
+        isAboutMeLoading,
         setOnboardingState,
       }}
     >
@@ -110,6 +132,4 @@ export const HelperProvider: React.FC<{
   );
 };
 
-export const useHelperProvider = () => {
-  return useContext(HelperContext);
-};
+export const useHelperProvider = () => useContext(HelperContext);
