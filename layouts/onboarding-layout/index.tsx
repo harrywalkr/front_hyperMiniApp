@@ -13,7 +13,11 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   const { stepStatus, isCheckingEligibility } = useHelperProvider();
 
   useEffect(() => {
-    if (stepStatus === "new") {
+    if (stepStatus && !isCheckingEligibility) {
+      if (stepStatus === "onboarding" || stepStatus === "premium") {
+        return;
+      }
+
       router.push("/login");
     }
   }, [isCheckingEligibility, stepStatus]);

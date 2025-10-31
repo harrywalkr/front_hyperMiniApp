@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form";
 import { CopyTradeFormType } from "./types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { copyTradeFormSchema } from "./schema";
-import { NavigationBar } from "@/common/navigation-bar";
 import { copyTradingModels } from "@/models/copy-trading";
 import { useCallback, useEffect, useEffectEvent } from "react";
 import { SuccessModal } from "@/core/components";
@@ -256,7 +255,7 @@ export const CopyTradeSettings: React.FC = () => {
         onCloseAction={toggleSuccess}
         title="Settings Saved"
         text="Your Copy trading settings saved successfuly!"
-        buttonTitle="follow wallets"
+        buttonTitle="go to dashboard"
         onCloseRedirectUrl="/dashboard"
       />
     </div>

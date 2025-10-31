@@ -11,13 +11,15 @@ export const NewLayout: React.FC<NewLayoutProps> = ({ children }) => {
   const { stepStatus, isCheckingEligibility } = useHelperProvider();
 
   useEffect(() => {
-    if (stepStatus === "new") {
-      return;
+    if (stepStatus && !isCheckingEligibility) {
+      if (stepStatus === "new") {
+        return;
+      }
+
+      router.push(
+        stepStatus === "onboarding" ? "/copy-trade-settings" : "/dashboard"
+      );
     }
-    console.log("redirect from new layout");
-    router.push(
-      stepStatus === "onboarding" ? "/copy-trade-settings" : "/dashboard"
-    );
   }, [isCheckingEligibility, stepStatus]);
 
   if (isCheckingEligibility || !stepStatus) {
@@ -25,7 +27,7 @@ export const NewLayout: React.FC<NewLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="flex flex-col overscroll-none overflow-y-auto min-h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat p-5 max-w-md mx-auto">
+    <div className="flex flex-col overscroll-none overflow-x-hidden overflow-y-auto min-h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat p-5 max-w-md mx-auto">
       {children}
     </div>
   );

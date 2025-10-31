@@ -54,9 +54,8 @@ function parseInitDataUnsafe(initDataQS: string | null): UnsafeInit | null {
 }
 
 /** try to obtain Telegram.WebApp, with retries (up to ~5s) */
-async function waitForTelegramWebApp(maxMs = 5000, stepMs = 5) {
-  const steps = Math.ceil(maxMs / stepMs);
-  for (let i = 0; i < steps; i++) {
+async function waitForTelegramWebApp(stepMs = 100) {
+  for (let i = 0; i < 3; i++) {
     const tg = (window as any)?.Telegram?.WebApp;
     if (tg) return tg;
     await delay(stepMs);
@@ -67,7 +66,7 @@ async function waitForTelegramWebApp(maxMs = 5000, stepMs = 5) {
 export async function getTgChatId() {
   let cancelled = false;
 
-  const tg = await waitForTelegramWebApp(1000, 100);
+  const tg = await waitForTelegramWebApp(250);
 
   const hashInitData = getInitDataFromHash();
   const hashUnsafe = parseInitDataUnsafe(hashInitData);
