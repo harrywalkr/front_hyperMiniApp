@@ -1,6 +1,7 @@
 "use client";
 import { userModels } from "@/models/user";
 import { AboutMeResponse } from "@/models/user/aboutMe/types";
+import { usePathname } from "next/navigation";
 import {
   createContext,
   Dispatch,
@@ -33,8 +34,11 @@ const HelperContext = createContext<HelperContextType>({
 export const HelperProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
+  const pathname = usePathname();
+
   const aboutMe = userModels.aboutMe.useQuery({
     staleTime: 1000 * 60 * 5,
+    enabled: pathname !== "/tg-error",
   });
 
   const [stepStatus, setStepStatus] = useState<StepStatusType | undefined>(
@@ -86,7 +90,6 @@ export const HelperProvider: React.FC<{
     setStepStatus("new");
     setIsLoading(false);
   }, [aboutMe?.data, onboardingState]);
-  console.log({ stepStatus });
 
   return (
     <HelperContext.Provider
@@ -95,7 +98,7 @@ export const HelperProvider: React.FC<{
           aboutMe?.data?.eligibility?.member ||
             aboutMe?.data?.eligibility?.subscribed
         ),
-        isCheckingEligibility: aboutMe.isFetching || isLoading,
+        isCheckingEligibility: aboutMe.isLoading || isLoading,
         isAboutMeLoading: aboutMe.isFetching,
         aboutMe: aboutMe.data,
         stepStatus,

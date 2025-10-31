@@ -6,7 +6,7 @@ import { TransactionCard } from "./transaction-card";
 
 export const Transactions: React.FC = () => {
   return (
-    <div className="flex flex-col overscroll-none overflow-y-auto min-h-screen bg-[url('/bg.png')] bg-cover bg-center bg-no-repeat p-5 max-w-md mx-auto">
+    <div>
       <Back title="Transactions History" />
 
       <div className="flex flex-col gap-6">

@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@heroui/react";
 import { SearchX } from "lucide-react";
+import Link from "next/link";
 
 export default function NotFound() {
   return (
@@ -14,16 +15,17 @@ export default function NotFound() {
         Page you are looking for does not exists!
       </p>
 
-      <Button
-        color="primary"
-        fullWidth
-        radius="full"
-        variant="ghost"
-        className="font-medium"
-        href="/"
-      >
-        Home
-      </Button>
+      <Link href="/">
+        <Button
+          color="primary"
+          fullWidth
+          radius="full"
+          variant="ghost"
+          className="font-medium"
+        >
+          Home
+        </Button>
+      </Link>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import NextTopLoader from "nextjs-toploader";
 import { ToastProvider } from "@heroui/toast";
 import { getQueryClient } from "@/core/config";
 import { HelperProvider } from "./helperProvider";
+import { Toaster } from "react-hot-toast";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -43,6 +44,8 @@ export function Providers({ children, themeProps }: ProvidersProps) {
               },
             }}
           />
+
+          <Toaster />
 
           <HelperProvider>{children}</HelperProvider>
         </ThemeProvider>
