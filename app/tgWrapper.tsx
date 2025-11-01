@@ -24,25 +24,30 @@ export const TgProvider: React.FC<{
 
   const [tgIdSession, setTgIdSession] = useSessionStorage<string | undefined>(
     "mini-app-tg-id",
-    undefined
+    tg?.id ? String(tg?.id) : undefined,
+    { initializeWithValue: true }
   );
 
   useEffect(() => {
     setIsLoading(true);
 
+    if (tgIdSession) {
+      setIsLoading(false);
+      return;
+    }
+
     getTgChatId()
       .then((res) => {
         setTgIdSession(res?.id ? String(res?.id) : undefined);
         setTg(res);
+        setIsLoading(false);
       })
       .catch(() => {
         setTgIdSession(undefined);
         setTg(undefined);
-      })
-      .finally(() => {
         setIsLoading(false);
       });
-  }, []);
+  }, [tgIdSession]);
 
   return (
     <TgContext.Provider

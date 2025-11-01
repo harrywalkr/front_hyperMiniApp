@@ -23,7 +23,11 @@ export const NewLayout: React.FC<NewLayoutProps> = ({ children }) => {
   }, [isCheckingEligibility, stepStatus]);
 
   if (isCheckingEligibility || !stepStatus) {
-    return <Loading />;
+    return (
+      <div>
+        <Loading debugText="new status" />
+      </div>
+    );
   }
 
   return (

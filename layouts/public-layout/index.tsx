@@ -22,7 +22,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({ children }) => {
   }, [stepStatus, isCheckingEligibility]);
 
   if (isCheckingEligibility || !stepStatus) {
-    return <Loading />;
+    return <Loading debugText="premium status" />;
   }
 
   return (
