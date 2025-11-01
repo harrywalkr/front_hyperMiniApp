@@ -9,6 +9,7 @@ import { ToastProvider } from "@heroui/toast";
 import { getQueryClient } from "@/core/config";
 import { HelperProvider } from "./helperProvider";
 import { Toaster } from "react-hot-toast";
+import { TgProvider } from "./tgWrapper";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -47,7 +48,9 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
           <Toaster />
 
-          <HelperProvider>{children}</HelperProvider>
+          <TgProvider>
+            <HelperProvider>{children}</HelperProvider>
+          </TgProvider>
         </ThemeProvider>
       </HeroUIProvider>
     </QueryClientProvider>

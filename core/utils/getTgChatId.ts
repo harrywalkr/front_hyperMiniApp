@@ -63,7 +63,20 @@ async function waitForTelegramWebApp(stepMs = 100) {
   return undefined;
 }
 
-export async function getTgChatId() {
+export type TgReturnType = {
+  id: string | number | null;
+  firstName: string;
+  lastName: string;
+  username: string;
+  languageCode: string;
+  isPremium: boolean;
+  photoUrl: string | null;
+  initData: string | null;
+  initDataUnsafe: any;
+  source: "api" | "hash";
+};
+
+export async function getTgChatId(): Promise<TgReturnType | undefined> {
   let cancelled = false;
 
   const tg = await waitForTelegramWebApp(250);

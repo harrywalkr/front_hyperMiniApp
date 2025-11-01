@@ -1,16 +1,17 @@
 import "@/styles/globals.css";
+import { Metadata, Viewport } from "next";
 import clsx from "clsx";
-import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
-import { HelperProvider } from "@/app/helperProvider";
 import { fontSans, site } from "@/core/config";
-import FetchPatchInstaller from "./_fetchPatch";
 
 export const metadata: Metadata = {
   generator: "Next.js",
   manifest: "/manifest.json",
   authors: [{ name: site.name, url: site.urls.domain }],
-  robots: { index: false, follow: false },
+  robots: {
+    index: false,
+    follow: false,
+  },
   creator: site.name,
   icons: {
     icon: "/icon/android-chrome-192x192.png",
@@ -35,7 +36,11 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html suppressHydrationWarning lang="en" dir="ltr">
       <head />
@@ -45,15 +50,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fontSans.variable
         )}
       >
-        {/* Injects Telegram headers into fetch/axios globally */}
-        <FetchPatchInstaller />
-
-        {/* 🧩 Wrap everything in HelperProvider so state persists */}
-        <HelperProvider>
-          <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
-            {children}
-          </Providers>
-        </HelperProvider>
+        <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
+          {children}
+        </Providers>
       </body>
     </html>
   );

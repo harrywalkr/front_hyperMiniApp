@@ -1,4 +1,5 @@
 "use client";
+
 import { Loader } from "lucide-react";
 
 export const Loading: React.FC = () => {

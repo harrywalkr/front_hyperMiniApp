@@ -2,7 +2,6 @@ import axios from "axios";
 import { site } from "./site";
 import { isServer } from "@tanstack/react-query";
 import { getTgChatId } from "../utils";
-import toast from "react-hot-toast";
 
 /**
  * Creates an Axios instance with a predefined base URL.
@@ -20,20 +19,23 @@ instance.interceptors.request.use(
   async (request) => {
     if (!isServer) {
       try {
-        const tg = await getTgChatId();
+        const tgIdSession = JSON.parse(
+          sessionStorage.getItem("mini-app-tg-id") ?? ""
+        );
 
-        // const tg = {
-        //   id: "561361266",
-        // };
-
-        if (!tg?.id) {
-          toast.error("Telegram chat ID not found. Open this app in Telegram.");
-          window.location.replace("/tg-error");
-          return Promise.reject(new Error("Telegram chat ID not found."));
+        if (tgIdSession) {
+          request.headers["X-TG-Init-Data"] = String(tgIdSession);
+          request.headers["X-Dev-Chat-Id"] = String(tgIdSession);
         }
 
-        request.headers["X-TG-Init-Data"] = String(tg.id);
-        request.headers["X-Dev-Chat-Id"] = String(tg.id);
+        if (!tgIdSession) {
+          const tg = await getTgChatId();
+
+          if (tg?.id) {
+            request.headers["X-TG-Init-Data"] = String(tg?.id);
+            request.headers["X-Dev-Chat-Id"] = String(tg?.id);
+          }
+        }
       } catch (err) {
         console.error("Telegram chat ID fetch failed:", err);
         return Promise.reject(
