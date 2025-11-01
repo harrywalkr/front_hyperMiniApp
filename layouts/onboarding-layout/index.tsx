@@ -23,7 +23,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   }, [isCheckingEligibility, stepStatus]);
 
   if (isCheckingEligibility || !stepStatus) {
-    return <Loading />;
+    return <Loading debugText="onboarding status" />;
   }
 
   return (
